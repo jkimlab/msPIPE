@@ -1,0 +1,7 @@
+## build with Dockerfile
+docker build -t mspipe:v1 .
+
+docker create -t --name mspipe -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference -v /PATH/TO/OUTDIR:/work_dir/ mspipe_container_name
+
+docker start mspipe_container_name
+docker attach hs_mspipe_container_name
