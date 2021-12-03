@@ -3,9 +3,8 @@
 
 ## Download
 
-    ```
     git clone https://github.com/jkimlab/msPIPE.git
-    ```
+    
 
 ## Download and installation with docker
 - Build msPIPE docker image
@@ -25,7 +24,7 @@
 
 ## Prepare input parameter file
 
-```basic
+```
 ### INPUT PARAMETER FORMAT ###
 
 ## [DMR]
