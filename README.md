@@ -15,7 +15,7 @@
     docker build -t [image_name] .
     ```
 
-- or you can pull docker image from the docker hub
+- Or you can pull docker image from the docker hub
 
     ```
     docker pull jkimlab/mspipe:latest
@@ -33,7 +33,7 @@
 ## [REFERENCE]
 ## UCSC_NAME = UCSC reference version name
 ## FASTA = [path to reference fasta file(not required)]
-## GTF= [path to reference gtf file(not required)]
+## GTF = [path to reference gtf file(not required)]
 
 ## [LIB1]
 ## SAMPLE_NAME = sample name
