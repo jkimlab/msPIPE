@@ -89,53 +89,56 @@ The parameter file contains the information necessary for pipeline execution.
 
 - Running example using mouse rod WGBS data from [Corso-Díaz, Ximena et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7228806/)
 - GEO accession : [GSE134873](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/bioproject/556668)
+- Samples
+    - 24M [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361857), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361856), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361855)
+    - 3M [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361836), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361837), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361839)
 - params_mouse.conf
 
     ```
     [DMR]
-    ANALYSIS1=24M_MouseRod, 3M_MouseRod
+    ANALYSIS1 = 24M, 3M
 
     [REFERENCE]
     UCSC_NAME = mm10
 
     [LIB1]
-    SAMPLE_NAME = 24M_MouseRod
-    LIB_NAME = 24M_MouseRod_lib1
+    SAMPLE_NAME = 24M
+    LIB_NAME = 24M_rep1
     LIB_TYPE = P
     FILE_1 = /PATH/TO/DATA/SRX6589858_1.fastq.gz
     FILE_2 = /PATH/TO/DATA/SRX6589858_2.fastq.gz
 
     [LIB2]
-    SAMPLE_NAME = 24M_MouseRod
-    LIB_NAME = 24M_MouseRod_lib2
+    SAMPLE_NAME = 24M
+    LIB_NAME = 24M_rep2
     LIB_TYPE = P
     FILE_1 = /PATH/TO/DATA/SRX6589859_1.fastq.gz
     FILE_2 = /PATH/TO/DATA/SRX6589859_2.fastq.gz
 
     [LIB3]
-    SAMPLE_NAME = 24M_MouseRod
-    LIB_NAME = 24M_MouseRod_lib3
+    SAMPLE_NAME = 24M
+    LIB_NAME = 24M_rep3
     LIB_TYPE = P
     FILE_1 = /PATH/TO/DATA/SRX6589860_1.fastq.gz
     FILE_2 = /PATH/TO/DATA/SRX6589860_2.fastq.gz
 
     [LIB4]
-    SAMPLE_NAME = 3M_MouseRod
-    LIB_NAME = 3M_MouseRod_lib1
+    SAMPLE_NAME = 3M
+    LIB_NAME = 3M_rep1
     LIB_TYPE = P
     FILE_1 = /PATH/TO/DATA/SRX6589850_1.fastq.gz
     FILE_2 = /PATH/TO/DATA/SRX6589850_2.fastq.gz
     
     [LIB5]
-    SAMPLE_NAME = 3M_MouseRod
-    LIB_NAME = 3M_MouseRod_lib2
+    SAMPLE_NAME = 3M
+    LIB_NAME = 3M_rep2
     LIB_TYPE = P
     FILE_1 = /PATH/TO/DATA/SRX6589851_1.fastq.gz
     FILE_2 = /PATH/TO/DATA/SRX6589851_2.fastq.gz
 
     [LIB6]
-    SAMPLE_NAME = 3M_MouseRod
-    LIB_NAME = 3M_MouseRod_lib3
+    SAMPLE_NAME = 3M
+    LIB_NAME = 3M_rep3
     LIB_TYPE = P
     FILE_1 = /PATH/TO/DATA/SRX6589852_1.fastq.gz
     FILE_2 = /PATH/TO/DATA/SRX6589852_2.fastq.gz
@@ -143,7 +146,7 @@ The parameter file contains the information necessary for pipeline execution.
 - Running command
 
     ```
-     /msPIPE/msPIPE.py -p params_mouse.conf -o mouse_result -c 5 -q 0.5
+     ./msPIPE/msPIPE.py -p params_mouse.conf -o mouse_result -c 5 -q 0.5
     ```
 
 
