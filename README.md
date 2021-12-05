@@ -9,7 +9,8 @@
 - Bismark ([https://github.com/FelixKrueger/Bismark](https://github.com/FelixKrueger/Bismark))
 - cutadapt ([https://cutadapt.readthedocs.io/en/stable/](https://cutadapt.readthedocs.io/en/stable/))
 
-*Or you can use msPIPE on docker without having to prepare the environment.* :point_right: [HOW TO USE msPIPE on docker](#using-docker)
+*Or you can use msPIPE on docker without having to prepare the environment.* :point_right: [HOW TO USE msPIPE on docker](#using-docker) ![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?&logo=Docker&logoColor=white)
+
 
 
 
@@ -139,44 +140,44 @@ The parameter file contains the information necessary for pipeline execution.
     ```
 - Running command
 
-```
- /msPIPE/msPIPE.py -p params_mouse.conf -o mouse_result -c 5 -q 0.5
-```
-
-
-## Using docker ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)
-
-
-1. Build msPIPE docker image
-
     ```
-    git clone https://github.com/jkimlab/msPIPE.git
-    cd msPIPE
-    docker build -t jkimlab/mspipe:latest .
+     /msPIPE/msPIPE.py -p params_mouse.conf -o mouse_result -c 5 -q 0.5
     ```
+
+
+## Using docker
+
+### Build msPIPE docker image
+
+```
+git clone https://github.com/jkimlab/msPIPE.git
+cd msPIPE
+docker build -t jkimlab/mspipe:latest .
+```
+    
 - or you can pull docker image from the docker hub
     ```
     docker pull jkimlab/mspipe:latest
     ```
-        
- 2. running
-    - Mount the volumes with '-v' options to deliver input data and receive output results.
-  **    - input data dir→ /msPIPE/data
-        - reusable references dir→ /msPIPE/reference
-        - output dir→ /work_dir**
-    - The parameter file must be written based on the internal path of the docker container and placed within the output dir.
-    - All paths must be expressed as absolute paths.
 
-    #docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
+### running
+    
+ ```
+ #docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
 
-    example
-
-    ```
-    docker run -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro ;
-    -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference ;
-    -v /PATH/TO/OUTDIR:/work_dir/ ;
-    jkimlab/mspipe:latest msPIPE.py -p params.conf -o result
-    ```
+ docker run -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference -v /PATH/TO/OUTDIR:/work_dir/ jkimlab/mspipe:latest msPIPE.py -p params.conf -o result
+ ```
+ 
+ 
+ - Mount the volumes with '-v' options to deliver input data and receive output results.
+    - input data dir→ /msPIPE/data
+    - reusable references dir→ /msPIPE/reference
+    - output dir→ /work_dir
+ - The parameter file must be written based on the internal path of the docker container and placed within the output dir.
+ - All paths must be expressed as absolute paths.
+ 
+ 
+ 
     
  ## CONTACT
 
