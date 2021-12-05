@@ -1,39 +1,42 @@
 # msPIPE
 - Methylation analysis pipeline for WGBS data
 
+
+## Requirements
+
+- Trim Galore ([https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
+- Samtools ([http://www.htslib.org/](http://www.htslib.org/))
+- Bismark ([https://github.com/FelixKrueger/Bismark](https://github.com/FelixKrueger/Bismark))
+- cutadapt ([https://cutadapt.readthedocs.io/en/stable/](https://cutadapt.readthedocs.io/en/stable/))
+
+*Or you can use msPIPE on docker without having to prepare the environment.* :point_right: [HOW TO USE msPIPE on docker](#using-docker)
+
+
+
 ## Download
 
-    git clone https://github.com/jkimlab/msPIPE.git
-    
-
-## Download and installation with docker
-- Build msPIPE docker image
-
-    ```
-    git clone https://github.com/jkimlab/msPIPE.git
-    cd msPIPE
-    docker build -t [image_name] .
-    ```
-
-- Or you can pull docker image from the docker hub
-
-    ```
-    docker pull jkimlab/mspipe:latest
-    ```
+```
+git clone https://github.com/jkimlab/msPIPE.git
+```
 
 
-## Prepare input parameter file
+## Running
+
+### Preparing an input parameter file
+
+The parameter file contains the information necessary for pipeline execution.
 
 ```
-### INPUT PARAMETER FORMAT ###
+### INPUT PARAMETER FILE FORMAT ###
 
 ## [DMR]
-## ANAYSIS1 = Two sample names for DMR analysis
+## ANALYSIS1 = Two sample names for DMR analysis
+## ANALYSIS2 = Two sample names for DMR analysis
 
 ## [REFERENCE]
 ## UCSC_NAME = UCSC reference version name
 ## FASTA = [path to reference fasta file(not required)]
-## GTF = [path to reference gtf file(not required)]
+## GTF= [path to reference gtf file(not required)]
 
 ## [LIB1]
 ## SAMPLE_NAME = sample name
@@ -43,58 +46,18 @@
 ## FILE_2 = path to sequencing read file
 ```
 
-- parameter_example.conf
+
+### Running pipeline
+
+- Running command 
+    ```
+    /PATH/TO/msPIPE/msPIPE.py -p params.conf -o OUTDIR &> logs
+    ```
+    
+- msPIPE options
 
     ```
-    [DMR]
-    ANALYSIS1 = SAMPLE1,SAMPLE2
-    ANALYSIS2 = SAMPLE1,SAMPLE3
-
-    [REFERENCE]
-    UCSC_NAME = hg38
-
-    [LIB1]
-    SAMPLE_NAME = SAMPLE1
-    LIB_NAME = SAMPLE1_lib1
-    LIB_TYPE = P
-    FILE_1 = /PATH/TO/DATA/SAMPLE1_lib1-1.fq.gz
-    FILE_2 = /PATH/TO/DATA/SAMPLE1_lib1-2.fq.gz
-
-    [LIB2]
-    SAMPLE_NAME = SAMPLE1
-    LIB_NAME = SAMPLE1_lib1
-    LIB_TYPE = P
-    FILE_1 = /PATH/TO/DATA/SAMPLE1_lib2-1.fq.gz
-    FILE_2 = /PATH/TO/DATA/SAMPLE1_lib2-2.fq.gz
-
-    [LIB3]
-    SAMPLE_NAME = SAMPLE2
-    LIB_NAME = SAMPLE2
-        LIB_TYPE = P
-    FILE_1 = /PATH/TO/DATA/SAMPLE2-1.fq.gz
-    FILE_2 = /PATH/TO/DATA/SAMPLE2-2.fq.gz
-
-    [LIB4]
-    SAMPLE_NAME = SAMPLE3
-    LIB_NAME = SAMPLE3
-    LIB_TYPE = S
-    FILE_1 = /PATH/TO/DATA/SAMPLE3.fq.gz
-
-    ```
-
-
-## Running
-- Running command
-
-    ```
-    /PATH/TO/msPIPE/msPIPE.py -p parameter.conf -o OUTDIR &> logs
-    ```
-
-
-- msPIPE running options
-
-    ```
-    ./msPIPE.py
+    ./msPIPE/msPIPE.py -h
 
     usage: msPIPE.py [-h] --param params.conf --out PATH [--core int]
                      [--qvalue float] [--skip_trimming] [--skip_mapping]
@@ -114,19 +77,111 @@
       --skip_HMR            skip the HMR analysis
       --skip_DMR            skip the DMR analysis
     ```
- 
-
-## **Third party tools**
-
-
-- Trim Galore ([https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
-- Samtools ([http://www.htslib.org/](http://www.htslib.org/))
-- Bismark ([https://github.com/FelixKrueger/Bismark](https://github.com/FelixKrueger/Bismark))
-- cutadapt ([https://cutadapt.readthedocs.io/en/stable/](https://cutadapt.readthedocs.io/en/stable/))
 
 
 
-## Contact
+
+
+## Running example
+
+- Running example using mouse rod WGBS data from [Corso-Díaz, Ximena et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7228806/)
+- GEO accession : GSE134873
+- params_mouse.conf
+
+    ```
+    [DMR]
+    ANALYSIS1=24M_MouseRod, 3M_MouseRod
+
+    [REFERENCE]
+    UCSC_NAME = mm10
+
+    [LIB1]
+    SAMPLE_NAME = 24M_MouseRod
+    LIB_NAME = 24M_MouseRod_lib1
+    LIB_TYPE = P
+    FILE_1 = /PATH/TO/DATA/SRX6589858_1.fastq.gz
+    FILE_2 = /PATH/TO/DATA/SRX6589858_2.fastq.gz
+
+    [LIB2]
+    SAMPLE_NAME = 24M_MouseRod
+    LIB_NAME = 24M_MouseRod_lib2
+    LIB_TYPE = P
+    FILE_1 = /PATH/TO/DATA/SRX6589859_1.fastq.gz
+    FILE_2 = /PATH/TO/DATA/SRX6589859_2.fastq.gz
+
+    [LIB3]
+    SAMPLE_NAME = 24M_MouseRod
+    LIB_NAME = 24M_MouseRod_lib3
+    LIB_TYPE = P
+    FILE_1 = /PATH/TO/DATA/SRX6589860_1.fastq.gz
+    FILE_2 = /PATH/TO/DATA/SRX6589860_2.fastq.gz
+
+    [LIB4]
+    SAMPLE_NAME = 3M_MouseRod
+    LIB_NAME = 3M_MouseRod_lib1
+    LIB_TYPE = P
+    FILE_1 = /PATH/TO/DATA/SRX6589850_1.fastq.gz
+    FILE_2 = /PATH/TO/DATA/SRX6589850_2.fastq.gz
+    
+    [LIB5]
+    SAMPLE_NAME = 3M_MouseRod
+    LIB_NAME = 3M_MouseRod_lib2
+    LIB_TYPE = P
+    FILE_1 = /PATH/TO/DATA/SRX6589851_1.fastq.gz
+    FILE_2 = /PATH/TO/DATA/SRX6589851_2.fastq.gz
+
+    [LIB6]
+    SAMPLE_NAME = 3M_MouseRod
+    LIB_NAME = 3M_MouseRod_lib3
+    LIB_TYPE = P
+    FILE_1 = /PATH/TO/DATA/SRX6589852_1.fastq.gz
+    FILE_2 = /PATH/TO/DATA/SRX6589852_2.fastq.gz
+    ```
+- Running command
+
+```
+ /msPIPE/msPIPE.py -p params_mouse.conf -o mouse_result -c 5 -q 0.5
+```
+
+
+## Using docker 
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)
+
+
+1. Build msPIPE docker image
+
+    ```
+    git clone https://github.com/jkimlab/msPIPE.git
+    cd msPIPE
+    docker build -t jkimlab/mspipe:latest .
+    ```
+
+    - or you can pull docker image from the docker hub
+
+        ```
+        docker pull jkimlab/mspipe:latest
+        ```
+        
+ 2. running
+    - Mount the volumes with '-v' options to deliver input data and receive output results.
+  **    - input data dir→ /msPIPE/data
+        - reusable references dir→ /msPIPE/reference
+        - output dir→ /work_dir**
+    - The parameter file must be written based on the internal path of the docker container and placed within the output dir.
+    - All paths must be expressed as absolute paths.
+
+    #docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
+
+    example
+
+    ```
+    docker run -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro ;
+    -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference ;
+    -v /PATH/TO/OUTDIR:/work_dir/ ;
+    jkimlab/mspipe:latest msPIPE.py -p params.conf -o result
+    ```
+    
+ ## CONTACT
 
 [bioinfolabkr@gmail.com](mailto:bioinfolabkr@gmail.com)
 
