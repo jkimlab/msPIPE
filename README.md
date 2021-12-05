@@ -94,7 +94,7 @@ The parameter file contains the information necessary for pipeline execution.
     - 3M [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361836), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361837), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361839)
 
 - params_mouse.conf  
-    Replace the [ /PATH/TO/DATA ] with a data path on your local server.
+    *Replace the '/PATH/TO/DATA' with a data path on your local server.*
     
     ```
     [DMR]
@@ -182,7 +182,7 @@ docker build -t jkimlab/mspipe:latest .
     - output dir→ /work_dir
  - The parameter file must be written based on the internal path of the docker container and placed within the output dir.
  - All paths must be expressed as absolute paths.
- - Replace the [ /PATH/TO/* ] with a directory path on your local server.
+ - Replace the '/PATH/TO/*' with a directory path on your local server.
  
  
  
