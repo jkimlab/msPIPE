@@ -149,7 +149,7 @@ The parameter file contains the information necessary for pipeline execution.
 
 ## Using docker
 
-### Build msPIPE docker image
+### build msPIPE docker image
 
 ```
 git clone https://github.com/jkimlab/msPIPE.git
@@ -162,7 +162,7 @@ docker build -t jkimlab/mspipe:latest .
     docker pull jkimlab/mspipe:latest
     ```
 
-### running
+### run
     
  ```
  #docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
