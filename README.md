@@ -144,8 +144,7 @@ The parameter file contains the information necessary for pipeline execution.
 ```
 
 
-## Using docker 
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)
+## Using docker ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&logo=docker&logoColor=white)
 
 
 1. Build msPIPE docker image
@@ -155,12 +154,10 @@ The parameter file contains the information necessary for pipeline execution.
     cd msPIPE
     docker build -t jkimlab/mspipe:latest .
     ```
-
-    - or you can pull docker image from the docker hub
-
-        ```
-        docker pull jkimlab/mspipe:latest
-        ```
+- or you can pull docker image from the docker hub
+    ```
+    docker pull jkimlab/mspipe:latest
+    ```
         
  2. running
     - Mount the volumes with '-v' options to deliver input data and receive output results.
