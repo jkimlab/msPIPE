@@ -86,6 +86,3 @@ ENV PATH $CONDA_DIR/bin/cutadapt:$PATH
 RUN mkdir -p /work_dir
 WORKDIR /work_dir
 
-COPY params* /work_dir
-
-
