@@ -6,6 +6,7 @@ use File::Basename;
 use FindBin qw($Bin);
 use Cwd 'abs_path';
 
+
 my $in_param;
 my $out_dir = "./output";
 my $range = 1500;
@@ -16,6 +17,7 @@ my $help;
 
 my $convert2bed = "convert2bed";
 my $bedtools = "bedtools";
+my $annotation = $Bin."/GMA.annotation.py";
 
 my $options = GetOptions(
 		"param|p=s" => \$in_param,
@@ -60,10 +62,12 @@ while(<FPARAM>){
 								exit();
 						}
 						print STDERR "[GMA] processing annotation fils \n";
+						
 						`$convert2bed --input=gtf --output=bed < $file > $annot_dir/annotation.bed`;
 						`awk '\$8==\"transcript\"' $annot_dir/annotation.bed > $annot_dir/tmp.gene.bed`;
 						`$bedtools sort -i $annot_dir/tmp.gene.bed > $annot_dir/gene.bed`;
 						`rm -f $annot_dir/tmp.gene.bed`;
+						#`$annotation $file $annot_dir`;
 						`$bedtools merge -i $annot_dir/gene.bed > $annot_dir/merge.gene.bed`;
 						`awk '\$8==\"exon\"' $annot_dir/annotation.bed > $annot_dir/tmp.exon.bed`;
 						`$bedtools sort -i $annot_dir/tmp.exon.bed > $annot_dir/exon.bed`;
@@ -193,8 +197,8 @@ foreach my $data_type (sort keys(%hs_input)){
 #				`rm -f $out_dir/$data_type/Promoter.tmp.bed`;
 				`bedtools sort -i $out_dir/$data_type/UMRs.bed > $out_dir/$data_type/sort.UMRs.bed`;
 				`bedtools sort -i $out_dir/$data_type/LMRs.bed > $out_dir/$data_type/sort.LMRs.bed`;
-				`bedtools intersect -wa -c -a $annot_dir/sort.promoter.bed -b $out_dir/$data_type/sort.UMRs.bed > $out_dir/$data_type/UMR-Promoter.cnt.bed`;
-				`bedtools intersect -wo -a $annot_dir/sort.promoter.bed -b $out_dir/$data_type/sort.UMRs.bed > $out_dir/$data_type/UMR-Promoter.pos.bed`;
+				`bedtools intersect -wa -c -a $annot_dir/promoter.bed -b $out_dir/$data_type/sort.UMRs.bed > $out_dir/$data_type/UMR-Promoter.cnt.bed`;
+				`bedtools intersect -wo -a $annot_dir/promoter.bed -b $out_dir/$data_type/sort.UMRs.bed > $out_dir/$data_type/UMR-Promoter.pos.bed`;
 				#`Rscript $Bin/GMA.Circos_UMRLMR.R $out_dir/Ideogram.bed $out_dir/$data_type/sort.UMRs.bed $out_dir/$data_type/sort.LMRs.bed $out_dir/$data_type/PDF_UMRsLMRs.pdf`;
 		}
 		else{

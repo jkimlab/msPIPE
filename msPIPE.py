@@ -34,17 +34,9 @@ def make_argparser():
 
 
 parser = make_argparser()
-
-try:
-    parser.parse_args(args)
-except :
-    parser.print_help()
-    sys.exit()
-
 args = parser.parse_args()
 paramF = args.param
 outD = os.path.abspath(args.out)
-
 
 ## ===== result space =====
 curD = os.getcwd()
@@ -103,11 +95,11 @@ class Programs():
         self.getStat = scriptD + '/getStat.pl'
         self.dmr = scriptD + '/getDMR_500bp.pl'
 
-        self.gene = binD + '/GMA/Gene-Methyl-Analysis2.pl'
+        self.gene = binD + '/GMA/Gene-Methyl-Analysis.pl'
         self.bed2wig = scriptD + '/MethLvBEDtoWIG.pl'
         
         visD = f"{pipe_path}/bin/vis_script/"
-        self.analCpG = visD + 'visualization_parallel2.R'
+        self.analCpG = visD + 'visualization_parallel.R'
         self.window = visD + "win100kb_methylLevel.R"
         self.circos = visD + 'GMA.Circos_100kb.R'
         self.contextLev = visD + 'genomic_context_levels.R'

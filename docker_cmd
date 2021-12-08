@@ -1,7 +1,11 @@
-## build with Dockerfile
-docker build -t mspipe:v1 .
+## build docker image with Dockerfile
+docker build -t jkimlab/mspipe:latest .
 
-docker create -t --name mspipe -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference -v /PATH/TO/OUTDIR:/work_dir/ mspipe_container_name
+## build docker image with Docker hub
+#docker pull jkimlab/mspipe:latest
 
-docker start mspipe_container_name
-docker attach hs_mspipe_container_name
+
+## run
+#docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
+
+docker run -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference -v /PATH/TO/OUTDIR:/work_dir/ jkimlab/mspipe:latest msPIPE.py -p params.conf -o result
