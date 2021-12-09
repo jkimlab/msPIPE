@@ -192,12 +192,12 @@ docker build -t jkimlab/mspipe:latest .
     FILE_1 = /msPIPE/data/SRX6589859_1.fastq.gz
     FILE_2 = /msPIPE/data/SRX6589859_2.fastq.gz
     
-    . . .
+    ...
     
     
     ```
 
-### run
+### Running pipeline on Docker
     
  ```
  #docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
