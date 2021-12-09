@@ -152,7 +152,7 @@ The parameter file contains the information necessary for pipeline execution.
     ```
 
 
-## Using docker
+## Using Docker
 
 ### build msPIPE docker image
 
@@ -167,21 +167,49 @@ docker build -t jkimlab/mspipe:latest .
     docker pull jkimlab/mspipe:latest
     ```
 
+### Preparing an input parameter file for Docker
+ - The parameter file must be written based on the internal path of the docker container and placed within the output dir.
+ - Mount the volumes with '-v' options to deliver input data and receive output results.
+ - params_docker.conf  
+    ```
+    [DMR]
+    ANALYSIS1 = 24M, 3M
+
+    [REFERENCE]
+    UCSC_NAME = mm10
+
+    [LIB1]
+    SAMPLE_NAME = 24M
+    LIB_NAME = 24M_rep1
+    LIB_TYPE = P
+    FILE_1 = /msPIPE/data/SRX6589858_1.fastq.gz
+    FILE_2 = /msPIPE/data/SRX6589858_2.fastq.gz
+
+    [LIB2]
+    SAMPLE_NAME = 24M
+    LIB_NAME = 24M_rep2
+    LIB_TYPE = P
+    FILE_1 = /msPIPE/data/SRX6589859_1.fastq.gz
+    FILE_2 = /msPIPE/data/SRX6589859_2.fastq.gz
+    
+    . . .
+    
+    
+    ```
+
 ### run
     
  ```
  #docker run -v [local path]:[docker path] [docker image name] [msPIPE command]
 
- docker run -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference -v /PATH/TO/OUTDIR:/work_dir/ jkimlab/mspipe:latest msPIPE.py -p params.conf -o result
+ docker run -v /PATH/TO/INPUT/DATA:/msPIPE/data:ro -v /PATH/TO/REUSABLE/REFERENCE:/msPIPE/reference -v /PATH/TO/OUTDIR:/work_dir/ jkimlab/mspipe:latest msPIPE.py -p params_docker.conf -o result
  ```
  
- 
  - Mount the volumes with '-v' options to deliver input data and receive output results.
-    - input data dir→ /msPIPE/data
-    - reusable references dir→ /msPIPE/reference
-    - output dir→ /work_dir
- - The parameter file must be written based on the internal path of the docker container and placed within the output dir.
- - All paths must be expressed as absolute paths.
+    - input data dir → /msPIPE/data
+    - reusable references dir → /msPIPE/reference
+    - output dir → /work_dir
+ - All local paths to mount volumes are must be expressed as absolute paths.
  - Replace the '/PATH/TO/*' with a directory path on your local server.
  
  
