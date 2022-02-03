@@ -86,7 +86,7 @@ The main steps of the entire pipeline and the steps that can be omitted are as f
 1. **check all input**. 
 2. **Prepare bisulfite-converted reference genome (bismark_genome_preperation)**  
 	- It will be skipped if the same assembly name of the bisulfite genome has already been created under msPIPE/reference/ directory.
-3. **Trimming the WGBS reads.  (TrimGalore)**
+3. **WGBS reads trimming.  (TrimGalore)**
 	- Can drop with *--skip_trimming* option.
 	- Trimmed reads to be used in mapping can be delivered through the TRIMMED_FILE_* parameters. ([LIB1] on below format)
 	- Without TRIMMED_FILE_* parameters, the pipeline searches the files on the output directory.
@@ -98,7 +98,7 @@ The main steps of the entire pipeline and the steps that can be omitted are as f
 	- Can drop with *--skip_calling* option.
 	- Pipeline use calling output on the output directory.
 	- Other msPIPE calling output can be given with the *--calling_data* option.
-6. **Gene Methylation Analysis ( Methylation profiling and Hypomethylated region analysis )**
+6. **Gene-Methylation analysis ( Methylation profiling and Hypomethylated region analysis )**
 	- Can drop with *--skip_GMA* option.
 7. **Differential methylation analysis**
 	- Can drop with *--skip_DMR* option.  
@@ -133,7 +133,7 @@ ___
 - Running example using mouse rod WGBS data from [Corso-Díaz, Ximena et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7228806/)  
 
     | GEO accession | sample-24M |  sample-3M |
-    | --------------| ----------------- | ----------------- |
+    | ------------| ------------- | ------------- |
     | [GSE134873](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/bioproject/556668) | [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361857), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361856), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361855) | [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361836), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361837), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361839)|
 
 - params_mouse.conf  
