@@ -10,8 +10,7 @@
 - cutadapt ([https://cutadapt.readthedocs.io/en/stable/](https://cutadapt.readthedocs.io/en/stable/))
 <br />
 
-*Or you can use msPIPE on docker without having to prepare the environment.* 
-
+*Or you can use msPIPE on docker without having to prepare the environment.* ***\< Recommended\>***  
 :point_right: [HOW TO USE msPIPE on docker](#using-docker) ![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?&logo=Docker&logoColor=white)
 <br />
 <br />
@@ -24,74 +23,118 @@ git clone https://github.com/jkimlab/msPIPE.git
 ```
 
 
+
 ## Running
-
-### Preparing an input parameter file
-
-The parameter file contains the information necessary for pipeline execution.
-
+#### Running command
 ```
-### INPUT PARAMETER FILE FORMAT ###
-
-## [DMR]
-## ANALYSIS1 = Two sample names for DMR analysis
-## ANALYSIS2 = Two sample names for DMR analysis
-
-## [REFERENCE]
-## UCSC_NAME = UCSC reference version name
-## FASTA = [path to reference fasta file(not required)]
-## GTF= [path to reference gtf file(not required)]
-
-## [LIB1]
-## SAMPLE_NAME = sample name
-## LIB_NAME = library name
-## LIB_TYPE = P or S (Paired-End or Single-Read)
-## FILE_1 = path to sequencing read file
-## FILE_2 = path to sequencing read file
+/PATH/TO/msPIPE/msPIPE.py -p params.conf -o OUTDIR 
 ```
 
 
-### Running pipeline
+#### Preparing an input parameter file
+The parameter file must contain information necessary for pipeline execution.
+* params_format.conf   
 
-- Running command 
-    ```
-    /PATH/TO/msPIPE/msPIPE.py -p params.conf -o OUTDIR &> logs
-    ```
-    
-- msPIPE options
+	> ###INPUT PARAMETER FILE FORMAT###
+	>
+	> [DMR]   
+	> ANALYSIS1 = sample1, sample2 (Two sample names for DMR analysis)   
+	> ANALYSIS2 = sample1, sample3 (Two sample names for DMR analysis)   
+	>
+	> [REFERENCE]  
+	> UCSC_NAME = UCSC reference version name   
+	> FASTA = [path to reference fasta file (not required)]  
+	> GTF= [path to reference gtf file (not required)]  
+	>
+	> [LIB1]  
+	> SAMPLE_NAME = sample name  
+	> LIB_NAME = library name  
+	> LIB_TYPE = P or S (Paired-End or Single-Read)  
+	> FILE_1 = [path to sequencing read file]  
+	> FILE_2 = [path to sequencing read file]  
 
-    ```
-    ./msPIPE/msPIPE.py -h
 
-    usage: msPIPE.py [-h] --param params.conf --out PATH [--core int]
-                     [--qvalue float] [--skip_trimming] [--skip_mapping]
-                     [--skip_calling] [--skip_HMR] [--skip_DMR]
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --param params.conf, -p params.conf
-                            config format parameter file
-      --out PATH, -o PATH   output directory
-      --core int, -c int    core (default:5)
-      --qvalue float, -q float
-                            q-value cutoff (default:0.5)
-      --skip_trimming       skip the trimgalore trimming
-      --skip_mapping        skip the bismark mapping
-      --skip_calling        skip the methylation calling
-      --skip_HMR            skip the HMR analysis
-      --skip_DMR            skip the DMR analysis
-    ```
+### Additional options  
+#### msPIPE options  
+```
+/PATH/TO/msPIPE/msPIPE.py -h
+usage: msPIPE.py [-h] --param params.conf --out PATH [--core int] [--qvalue float] [--skip_trimming]
+                 [--skip_mapping] [--skip_calling] [--calling_data PATH] [--skip_bedgraph] [--skip_GMA]
+                 [--skip_DMR]
+                 
+optional arguments:
+    -h, --help            show this help message and exit
+    --param params.conf, -p params.conf
+                          config format parameter file
+    --out PATH, -o PATH   output directory
+    --core int, -c int    core (default:5)
+    --qvalue float, -q float
+                          q-value cutoff (default:0.5)
+    --skip_trimming       skip the trimgalore trimming
+    --skip_mapping        skip the bismark mapping
+    --skip_calling        skip the methylation calling
+    --calling_data PATH, -m PATH
+                          methylCALL directory
+    --skip_GMA            skip the Gene-Methyl analysis
+    --skip_DMR            skip the DMR analysis
+ ```
+ 
+#### Skip options
+You can leave out some pipeline steps with the *--skip_\<STEP\>* option.  
+The main steps of the entire pipeline and the steps that can be omitted are as follows.
+1. **check all input**. 
+2. **Prepare bisulfite-converted reference genome (bismark_genome_preperation)**  
+	- It will be skipped if the same assembly name of the bisulfite genome has already been created under msPIPE/reference/ directory.
+3. **Trimming the WGBS reads.  (TrimGalore)**
+	- Can drop with *--skip_trimming* option.
+	- Trimmed reads to be used in mapping can be delivered through the TRIMMED_FILE_* parameters. ([LIB1] on below format)
+	- Without TRIMMED_FILE_* parameters, the pipeline searches the files on the output directory.
+4. **WGBS reads mapping.  (Bismark)**
+	- Can drop with *--skip_mapping* option.
+	- Mapping file to be used in the next step can be delivered through the BAM_FILE parameter. ([LIB2] on below format)
+	- Without BAM_FILE parameter, the pipeline searches the file on the output directory.
+5. **Methylation calling. (Bismark)**
+	- Can drop with *--skip_calling* option.
+	- Pipeline use calling output on the output directory.
+	- Other msPIPE calling output can be given with the *--calling_data* option.
+6. **Gene Methylation Analysis ( Methylation profiling and Hypomethylated region analysis )**
+	- Can drop with *--skip_GMA* option.
+7. **Differential methylation analysis**
+	- Can drop with *--skip_DMR* option.  
 
-<br />
+* params_format.conf
 
+  > ###INPUT WITH SKIP OPTIONS###  
+  > 
+  > **...**
+  >   
+  > 
+  > [LIB1]  
+  > SAMPLE_NAME = sample name  
+  > LIB_NAME = library name  
+  > LIB_TYPE = P or S (Paired-End or Single-Read)  
+  > TRIMMED_FILE_1 = [path to preprocessed read file (with --skip_trimming option)]  
+  > TRIMMED_FILE_2 = [path to preprocessed read file (with --skip_trimming option)]  
+  >
+  > [LIB2]  
+  > SAMPLE_NAME = sample name  
+  > LIB_NAME = library name  
+  > LIB_TYPE = P or S (Paired-End or Single-Read)  
+  > BAM_FILE = [path to bismark mapping file (with --skip_mapping option)]  
+
+
+<br /> 
+***
+  
 
 ## Running example
 
-- Running example using mouse rod WGBS data from [Corso-Díaz, Ximena et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7228806/)
-- GEO accession : [GSE134873](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/bioproject/556668)
-- Used samples
-    - 24M [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361857), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361856), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361855)  
-    - 3M [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361836), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361837), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361839)
+- Running example using mouse rod WGBS data from [Corso-Díaz, Ximena et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7228806/)  
+
+    | GEO accession | sample-24M |  sample-3M |
+    | --------------| ----------------- | ----------------- |
+    | [GSE134873](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/bioproject/556668) | [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361857), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361856), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361855) | [rep1](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361836), [rep2](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361837), [rep3](https://0-www-ncbi-nlm-nih-gov.brum.beds.ac.uk/biosample/12361839)|
 
 - params_mouse.conf  
     *Replace the '/PATH/TO/DATA' with a data path on your local server.*
@@ -220,8 +263,4 @@ docker build -t jkimlab/mspipe:latest .
  ## CONTACT
 
 [bioinfolabkr@gmail.com](mailto:bioinfolabkr@gmail.com)
-
-
-
-
 
