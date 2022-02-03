@@ -125,7 +125,6 @@ The main steps of the entire pipeline and the steps that can be omitted are as f
 
 
 <br /> 
-***
   
 
 ## Running example
