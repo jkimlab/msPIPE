@@ -126,6 +126,7 @@ The main steps of the entire pipeline and the steps that can be omitted are as f
 
 <br /> 
   
+___
 
 ## Running example
 
@@ -193,6 +194,7 @@ The main steps of the entire pipeline and the steps that can be omitted are as f
      ./msPIPE/msPIPE.py -p params_mouse.conf -o mouse_result -c 5 -q 0.5
     ```
 
+___
 
 ## Using Docker
 
