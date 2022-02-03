@@ -4,6 +4,7 @@ import sys
 import argparse
 import configparser
 import subprocess as sub
+from multiprocessing import Pool
 
 # ----------- system function ----------------
 
@@ -13,21 +14,38 @@ def printlog(logF, lines):
     print(lines)
     O.close()
 
+
+def multi_run_wrapper(args):
+    return subproc(*args)
+
 def subproc(CMD, logF, log_proc):
+    call = 0
     if logF == "stdout":
         printlog(log_proc, f'$ {CMD}')
         call = sub.call(CMD,  shell=True,universal_newlines=True)
+        pass
     else:
-        printlog(log_proc, f'$ {CMD}')
+        printlog(log_proc, f'$ {CMD}') ## FORTEST
         call = sub.call(f'{CMD} 2> {logF}', shell=True, universal_newlines=True)
-
+        pass
     if call == 0 :
-        printlog(log_proc, '\t .. done\n')
         return 0
     else :
         printlog(log_proc, "\n*** There's a problem executing the upper command.")
         printlog(log_proc, f"*** check logfile > {logF}\n")
         return 1
+
+
+def set_job_number(lib_num, given_core):
+    if lib_num >= given_core:
+        core =1
+        job_number = given_core
+
+    elif lib_num< given_core:
+        job_number = lib_num
+        core = given_core//job_number
+
+    return job_number, core
 
 
 class Parameters():
@@ -45,6 +63,7 @@ class Parameters():
 # -------   data preparence -----------------
 
 def UCSC_download(ucsc_name, f , refD):
+    global log_proc
     if f == 'fa':
         file_name = f'{ucsc_name}.fa.gz'
     elif f == 'gtf':
@@ -52,6 +71,7 @@ def UCSC_download(ucsc_name, f , refD):
 
     #download file
     cmd = f'wget https://hgdownload.soe.ucsc.edu/goldenPath/{ucsc_name}/bigZips/{file_name} -P {refD} -o {refD}/log.download_{f}.txt'
+    call_return =0
     call_return = sub.call(cmd, shell=True)
 
     if call_return != 0:

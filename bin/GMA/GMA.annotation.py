@@ -57,15 +57,6 @@ for l in open(gtfF , 'r'):
         exon_line = [ch, str(start), end,gene_id, e[5], e[6], e[1],e[2],e[7], e[8]]
         exonF.write('\t'.join(exon_line) + '\n')
 
-'''
-for ch in sorted(geneD):
-    for start in sorted(geneD[ch]):
-        geneF.write('\t'.join(geneD[ch][start]) + '\n')
-
-for ch in sorted(exonD):
-    for start in sorted(exonD[ch]):
-        exonF.write('\t'.join(exonD[ch][start]) + '\n')
-'''
 geneF.close()
 exonF.close()
 

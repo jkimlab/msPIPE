@@ -23,6 +23,8 @@ pop(@msr_dir);
 my $methylseekr_dir = join("/",@msr_dir);
 $methylseekr_dir .= "/MethylSeekR";
 open(FPAOUT, ">$out_dir/params.txt");
+
+open(FALLOUT, ">$out_dir/all_methylCalls.txt");
 foreach my $chr (@arr_all_chr){
 		my %hs_call = ();
 		for(my $i= 3; $i < $#ARGV; $i++){
@@ -62,10 +64,11 @@ foreach my $chr (@arr_all_chr){
 						my $total_cnt = $hs_call{$chr}{$base}{T} + $hs_call{$chr}{$base}{C};
 						if($total_cnt >= 10){
 								print FOUT "$chr\t$base\t$total_cnt\t$hs_call{$chr}{$base}{C}\n";
+								print FALLOUT "$chr\t$base\t$total_cnt\t$hs_call{$chr}{$base}{C}\n";
 						}
 				}
 		}
 		close(FOUT);
-		`cat $out_dir/$chr.txt >> $out_dir/all_methylCalls.txt`;
 }
 close(FPAOUT);
+close(FALLOUT);

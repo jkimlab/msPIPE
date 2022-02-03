@@ -19,6 +19,8 @@ Ideo_file <- args[2]
 outpath <- args[3]
 core_num <- args[4]
 
+outpath <- gsub( "/$","",  outpath)
+
 myCluster <- parallel::makeCluster(core_num,type = "FORK")
 doParallel::registerDoParallel(myCluster)
 
@@ -32,6 +34,7 @@ draw_hist <-  function(df, cx, name ){
   }else if (cx=="CHH"){
     cx_col = "#4DAF4A"
   }
+	
   ggplot(df, aes(x=level)) + theme_minimal()+
 	  geom_histogram(aes(y=..density..), alpha=0.9, col="black", fill=cx_col,binwidth = 11, boundary = 10)+
 	  scale_x_continuous(breaks = c(0,10,20,30,40,50,60,70,80,90,100))+
@@ -43,11 +46,15 @@ draw_hist <-  function(df, cx, name ){
 			) + 
     labs(x="levels (%)", y="density")
   
-  out_pdf <- paste(outpath, name, "/hist_",name,"_",cx,".pdf" ,sep="")
+  out_pdf <- paste(outpath, "/", name, "/hist_",name,"_",cx,".pdf" ,sep="")
   ggsave(out_pdf, width=20, height = 20)
+
 }
 
 window_levels <- function( cyto.df, data.df, cx,sample_name){
+	out_CpGF <- paste(outpath, "/",sample_name , "/",cx, '_methylLev_window.bed', sep ='')
+	file.create(out_CpGF)
+	
 	for(i in 1:length(cyto.df$chr)){
     	ch = cyto.df$chr[i]
     	chr_data <- data.df[data.df$chr == ch,]
@@ -65,7 +72,6 @@ window_levels <- function( cyto.df, data.df, cx,sample_name){
 		}
 		chr <- as.factor( rep(ch, length(start)) )
 		windows_data <- data.frame(chr,start, end, mean_levels)
-		out_CpGF <- paste(outpath, sample_name , "/",cx, '_methylLev_window.bed', sep ='')
 		write.table( windows_data, file=out_CpGF, append=TRUE,row.names=FALSE, col.names = FALSE,sep="\t" )
 	}
 
@@ -75,29 +81,32 @@ data_param <- read.table(vis_param, header=TRUE)
 Ideo.df <- read.table(Ideo_file, colClasses = c("character", "numeric", "numeric", "character", "character"), sep = "\t");
 colnames(Ideo.df) <- c('chr','start','end','ex1', 'ex2')
 
+
 ## READ FILES for PARALLEL
 mean_levels <- c()
 
 mean_levels <- foreach::foreach( i =1:nrow(data_param), .combine=c, .packages=c("ggplot2" ) ) %dopar% {
   file <- toString(data_param$file[i])
-  #message("read file ", file, "... \n")
   data <- read.table( file , header=FALSE, col.names = c("chr", "pos", "all", "methyl"))
   data$level <- (data$methyl/data$all)*100
-	
-
+  
   if (data_param$context[i] == "CpG"){
+	  
+	  #make file
+	  name <- data_param$sample[i]
+	  wig_file_name <- paste(outpath, "/", name, "/CpG_methylLev.wig", sep='')
+	  file.create(wig_file_name)
+  	  
 	  window_levels( Ideo.df, data, data_param$context[i] ,data_param$sample[i] )
 	  data$level <- round(data$level, 3)
 	  for(chr_i in 1:length(Ideo.df$chr)){
 		  chr_data <- data[data$chr == Ideo.df$chr[chr_i],]
-		  name <- data_param$sample[i]
-		  write(paste("variableStep chrom=", Ideo.df$chr[chr_i], sep=''), file=  paste(outpath, "/", name, "/CpG_methylLev.wig", sep=''),append=TRUE)
-		  write.table(data.frame(chr_data$pos, chr_data$level), file=  paste(outpath, "/", name, "/CpG_methylLev.wig", sep=''),append=TRUE,row.names=FALSE, col.names = FALSE,sep="\t", quote=FALSE )
+		  write(paste("variableStep chrom=", Ideo.df$chr[chr_i], sep=''), file= wig_file_name ,append=TRUE)
+		  write.table(data.frame(chr_data$pos, chr_data$level), file= wig_file_name, append=TRUE,row.names=FALSE, col.names = FALSE,sep="\t", quote=FALSE )
 	  }
   }
 
   draw_hist(data, data_param$context[i],data_param$sample[i])
-  #mean_levels <- c( mean_levels,mean(data$level) )
   mean(data$level)
 
 }
@@ -122,7 +131,7 @@ p1 <- p + theme(axis.title=element_text(size=40,face="bold"),
 				) +
 		labs(y="avg level(%)")
 
-outpdf <- paste(outpath ,"avg_methlevel.pdf", sep = "")
+outpdf <- paste(outpath ,"/","avg_methlevel.pdf", sep = "")
 ggsave(outpdf, plot=p1, width=30, height = 20)
 
 

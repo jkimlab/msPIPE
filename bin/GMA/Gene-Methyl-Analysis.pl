@@ -62,17 +62,21 @@ while(<FPARAM>){
 								exit();
 						}
 						print STDERR "[GMA] processing annotation fils \n";
-						
-						`$convert2bed --input=gtf --output=bed < $file > $annot_dir/annotation.bed`;
-						`awk '\$8==\"transcript\"' $annot_dir/annotation.bed > $annot_dir/tmp.gene.bed`;
-						`$bedtools sort -i $annot_dir/tmp.gene.bed > $annot_dir/gene.bed`;
-						`rm -f $annot_dir/tmp.gene.bed`;
-						#`$annotation $file $annot_dir`;
+						print "$annotation $file $annot_dir\n";
+						`$annotation $file $annot_dir`;
+						print"... done\n";
+
+						## merge genes
+						`$bedtools sort -i $annot_dir/gene.bed > $annot_dir/sorted.gene.bed`;
+						`mv $annot_dir/sorted.gene.bed $annot_dir/gene.bed`;
 						`$bedtools merge -i $annot_dir/gene.bed > $annot_dir/merge.gene.bed`;
-						`awk '\$8==\"exon\"' $annot_dir/annotation.bed > $annot_dir/tmp.exon.bed`;
-						`$bedtools sort -i $annot_dir/tmp.exon.bed > $annot_dir/exon.bed`;
-						`rm -f $annot_dir/tmp.exon.bed`;
+						
+						## merge exons
+						`$bedtools sort -i $annot_dir/exon.bed > $annot_dir/sorted.exon.bed`;
+						`mv $annot_dir/sorted.exon.bed $annot_dir/exon.bed`;
 						`$bedtools merge -i $annot_dir/exon.bed > $annot_dir/merge.exon.bed`;
+						
+						## make intron regions
 						`$bedtools subtract -a $annot_dir/merge.gene.bed -b $annot_dir/merge.exon.bed > $annot_dir/intron.bed`;
 
 				}
@@ -149,16 +153,10 @@ foreach my $data_type (sort keys(%hs_input)){
 		`$Bin/GMA.make_Union.pl $ref_name $cpu $chr_list $hs_input{$data_type}{CpG} $out_dir/$data_type/union_CpG`;
 
 		print STDERR "\t$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CpG/all_methylCalls.txt > $out_dir/$data_type/CpG_methylCalls.bed\n";
-		`$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CpG/all_methylCalls.txt > $out_dir/$data_type/tmp.CpG_methylCalls.bed`;
+		`$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CpG/all_methylCalls.txt > $out_dir/$data_type/CpG_methylCalls.bed`;
 		
-		print STDERR "\t$bedtools sort -i $out_dir/$data_type/tmp.CpG_methylCalls.bed > $out_dir/$data_type/CpG_methylCalls.bed\n";
-		`$bedtools sort -i $out_dir/$data_type/tmp.CpG_methylCalls.bed > $out_dir/$data_type/CpG_methylCalls.bed`;
-		`rm -f $out_dir/$data_type/tmp.CpG_methylCalls.bed`;
-
 		`$bedtools intersect -wo -a $annot_dir/Genomic_context.bed -b $out_dir/$data_type/CpG_methylCalls.bed > $out_dir/$data_type/methylation.Genomic_Context.CpG.txt`;
 
-		#`$Bin/GMA.MethLvBEDtoWIG.pl $out_dir/$data_type/CpG_methylCalls.bed > $out_dir/$data_type/CpG_methylCalls.wig`;
-		#`wigToBigWig $out_dir/$data_type/CpG_methylCalls.wig $out_dir/ref.size $out_dir/$data_type/CpG_methylCalls.bw`;
 
 		print STDERR "\t$bedtools intersect -wo -a $annot_dir/Promoter_Genebody.bed -b $out_dir/$data_type/CpG_methylCalls.bed > $out_dir/$data_type/methylation_in_Promoter_Genebody.CpG.bed\n";
 		`$bedtools intersect -wo -a $annot_dir/Promoter_Genebody.bed -b $out_dir/$data_type/CpG_methylCalls.bed > $out_dir/$data_type/methylation_in_Promoter_Genebody.CpG.bed`;
@@ -192,14 +190,10 @@ foreach my $data_type (sort keys(%hs_input)){
 				`ls $out_dir/$data_type/MethylSeekR/*.tsv > $out_dir/$data_type/UMRsLMRs.list.txt`;
 				print STDERR "\t$Bin/GMA.convert_umrlmr2bed.pl $out_dir/$data_type/UMRsLMRs.list.txt $out_dir/$data_type\n";
 				`$Bin/GMA.convert_umrlmr2bed.pl $out_dir/$data_type/UMRsLMRs.list.txt $out_dir/$data_type`;
-#				`grep "upstream1K" $annot_dir/sort.Promoter_Genebody.bed > $out_dir/$data_type/Promoter.tmp.bed`;
-#				`sed 's/^/chr/' $out_dir/$data_type/Promoter.tmp.bed > $out_dir/$data_type/Promoter.bed`;
-#				`rm -f $out_dir/$data_type/Promoter.tmp.bed`;
 				`bedtools sort -i $out_dir/$data_type/UMRs.bed > $out_dir/$data_type/sort.UMRs.bed`;
 				`bedtools sort -i $out_dir/$data_type/LMRs.bed > $out_dir/$data_type/sort.LMRs.bed`;
 				`bedtools intersect -wa -c -a $annot_dir/promoter.bed -b $out_dir/$data_type/sort.UMRs.bed > $out_dir/$data_type/UMR-Promoter.cnt.bed`;
 				`bedtools intersect -wo -a $annot_dir/promoter.bed -b $out_dir/$data_type/sort.UMRs.bed > $out_dir/$data_type/UMR-Promoter.pos.bed`;
-				#`Rscript $Bin/GMA.Circos_UMRLMR.R $out_dir/Ideogram.bed $out_dir/$data_type/sort.UMRs.bed $out_dir/$data_type/sort.LMRs.bed $out_dir/$data_type/PDF_UMRsLMRs.pdf`;
 		}
 		else{
 				print STDERR "[GMA] (skipped) UMRs and LMRs analysis\n";
@@ -213,11 +207,8 @@ foreach my $data_type (sort keys(%hs_input)){
 		`$Bin/GMA.make_Union.pl $ref_name $cpu $chr_list $hs_input{$data_type}{CHG} $out_dir/$data_type/union_CHG`;
 
 		print STDERR "\t$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHG/all_methylCalls.txt > $out_dir/$data_type/CHG_methylCalls.bed\n";
-		`$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHG/all_methylCalls.txt > $out_dir/$data_type/tmp.CHG_methylCalls.bed`;
+		`$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHG/all_methylCalls.txt > $out_dir/$data_type/CHG_methylCalls.bed`;
 		
-		print STDERR "\t$bedtools sort -i $out_dir/$data_type/tmp.CHG_methylCalls.bed > $out_dir/$data_type/CHG_methylCalls.bed\n";
-		`$bedtools sort -i $out_dir/$data_type/tmp.CHG_methylCalls.bed > $out_dir/$data_type/CHG_methylCalls.bed`;
-		`rm -f $out_dir/$data_type/tmp.CHG_methylCalls.bed`;
 		`$bedtools intersect -wo -a $annot_dir/Genomic_context.bed -b $out_dir/$data_type/CHG_methylCalls.bed > $out_dir/$data_type/methylation.Genomic_Context.CHG.txt`;
 
 		print STDERR "[GMA] $data_type - CHH context analysis\n";
@@ -225,12 +216,9 @@ foreach my $data_type (sort keys(%hs_input)){
 		print STDERR "\t$Bin/GMA.make_Union.pl $ref_name $cpu $chr_list $hs_input{$data_type}{CHH} $out_dir/$data_type/union_CHH\n";
 		`$Bin/GMA.make_Union.pl $ref_name $cpu $chr_list $hs_input{$data_type}{CHH} $out_dir/$data_type/union_CHH`;
 
-		print STDERR "\t$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHH/all_methylCalls.txt > $out_dir/$data_type/tmp.CHH_methylCalls.bed\n";
-		`$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHH/all_methylCalls.txt > $out_dir/$data_type/tmp.CHH_methylCalls.bed`;
+		print STDERR "\t$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHH/all_methylCalls.txt > $out_dir/$data_type/CHH_methylCalls.bed\n";
+		`$Bin/GMA.Union_txt2bed.pl $out_dir/$data_type/union_CHH/all_methylCalls.txt > $out_dir/$data_type/CHH_methylCalls.bed`;
 		
-		print STDERR "\t$bedtools sort -i $out_dir/$data_type/tmp.CHH_methylCalls.bed > $out_dir/$data_type/CHH_methylCalls.bed\n";
-		`$bedtools sort -i $out_dir/$data_type/tmp.CHH_methylCalls.bed > $out_dir/$data_type/CHH_methylCalls.bed`;
-		`rm -f $out_dir/$data_type/tmp.CHH_methylCalls.bed`;
 		`$bedtools intersect -wo -a $annot_dir/Genomic_context.bed -b $out_dir/$data_type/CHH_methylCalls.bed > $out_dir/$data_type/methylation.Genomic_Context.CHH.txt`;
 }
 
