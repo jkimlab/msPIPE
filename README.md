@@ -196,6 +196,57 @@ ___
 
 ___
 
+## Anlaysis Output
+
+All output created by msPIPE will be written to the `methylCALL` and `Analysis` directories in the given `output` directory.
+The output of pre-processing (read files processed by trimming and quality control), alignment, and methylation calling for each input library (named with LIB_NAME in config file) will be in `methylCALL` directory.
+The output of methylation analysis will be in `Analysis` directory. 
+
+* An example output structure of `Analysis` directory
+
+	```
+	[Anlaysis]
+	|- avg_methlevel.pdf
+	|- [annotations]
+	|- [sample1]
+	   |- ALL_TEXTFILES_AND_PLOTS_FOR_SAMPLE1
+	   |- [AroundTSS]
+	   |- [MethylSeekR]
+	|- [sample2]
+	   |- ...
+	|- [DMR]
+	   |- [sample1.sample2]
+	```
+
+* Output files and directories in `Analysis`
+
+	* avg_methlevel.pdf : a bar plot of average methylation level for CpG, CHG, and CHH context
+	* `annotations` : a directory with information of Genes, exons, introns, promoters, and intergenic regions in BED format files
+	* `sample1` : a directory with all results of methylation analysis for *sample1*
+		* Average_methyl_lv.txt : average methylation level for each gene and its promoter
+		* Avg_Genomic_Context_CpG.txt : average methylation level for each genomic context (gene, exon, intron, promoter, and intergenic)
+		* CXX_methylCalls.bed : all methylation calls for each CX context (CXX is one of CpG, CHG, and CHH)
+		* `AroundTSS`/meth_lv_3M.txt : for each gene, average methylation levels in bins around TSS (+/- 1500 bp)
+		* `MethylSeekR` : a directory with all results for running MethylSeekR
+		* UMR-Promoter.cnt.bed : the number of UMRs in each promoter region
+		* UMR-Promoter.pos.bed : the genomic coordinates of UMRs in each promoter region
+		* Circos.CpG_UMRs_LMRs.pdf : a circos plot for methylation level in whole-genome scale
+		* Genomic_Context_CpG.pdf : a bar plot for average methylation level of each genomic context (gene, exon, intron, promoter, and intergenic)
+		* hist_sample1_CXX.pdf : the distribution of methylation in CX context (CSS is one of CpG, CHG, and CHH)
+
+If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis` directory
+
+* Examples of output files and directories in `DMR` for comparison pair sample1 and sample2
+
+	* `sample1.sample2` : a directory with all results of DMC/DMR analysis, in this case sample1 will be treated as *control* and sample2 will be treated as *case*
+		* `methylkit` : output of running methylKit
+		* DMC_q0.5.bed : filtered DMCs with q-value 0.5
+		* hypoDMR_detailed_count_methyl : the number of hypomethylated DMCs in each promoter (methylation level *case* < *control*)
+		* hyperDMR_detailed_count_methyl : the number of hypermethylated DMCs in each promoter (methylation level *case* > *control*)
+		* intersection.DMC2Promoter.txt : a list of intersection between genes and DMCs
+		* DMC_genelist.txt : a list of genes with DMCs overlapped their promoter region
+___
+
 ## Using Docker
 
 ### build msPIPE docker image
