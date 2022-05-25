@@ -241,10 +241,12 @@ If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis`
 	* `sample1.sample2` : a directory with all results of DMC/DMR analysis, in this case sample1 will be treated as *control* and sample2 will be treated as *case*
 		* `methylkit` : output of running methylKit
 		* DMC_q0.5.bed : filtered DMCs with q-value 0.5
-		* hypoDMR_detailed_count_methyl : the number of hypomethylated DMCs in each promoter (methylation level *case* < *control*)
-		* hyperDMR_detailed_count_methyl : the number of hypermethylated DMCs in each promoter (methylation level *case* > *control*)
+		* hypoDMC_detailed_count_methyl.txt : the number of hypomethylated DMCs in each promoter (methylation level *case* < *control*)
+		* hyperDMC_detailed_count_methyl.txt : the number of hypermethylated DMCs in each promoter (methylation level *case* > *control*)
 		* intersection.DMC2Promoter.txt : a list of intersection between genes and DMCs
 		* DMC_genelist.txt : a list of genes with DMCs overlapped their promoter region
+		* DMC_gene.go_result.txt : a text output of GO enrichment test for genes with DMCs using g:Profiler
+		* DMC_gene.GOresult.pdf : Plots of GO enrichment test for genes with DMCs using g:Profiler 
 ___
 
 ## Using Docker
