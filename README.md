@@ -232,7 +232,7 @@ The output of methylation analysis will be in `Analysis` directory.
 		* UMR-Promoter.pos.bed : the genomic coordinates of UMRs in each promoter region
 		* Circos.CpG_UMRs_LMRs.pdf : a circos plot for methylation level in whole-genome scale
 		* Genomic_Context_CpG.pdf : a bar plot for average methylation level of each genomic context (gene, exon, intron, promoter, and intergenic)
-		* hist_sample1_CXX.pdf : the distribution of methylation in CX context (CSS is one of CpG, CHG, and CHH)
+		* hist_sample1_CXX.pdf : the distribution of methylation in CX context (CXX is one of CpG, CHG, and CHH)
 
 If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis` directory
 
