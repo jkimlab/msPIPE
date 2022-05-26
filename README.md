@@ -251,7 +251,7 @@ The output of methylation analysis will be in `Analysis` directory.
 		* Genomic_Context_CpG.pdf : a bar plot for average methylation level of each genomic context (gene, exon, intron, promoter, and intergenic)
 		* hist_sample1_CXX.pdf : the distribution of methylation in CX context (CXX is one of CpG, CHG, and CHH)
 
-If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis` directory. When the DMC/DMR analysis is performed using *methylKit*, GO enrichment test will be carried out for the gene set with DMCs in their promoter. 
+If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis` directory. When the DMC/DMR analysis is performed, GO enrichment test will be carried out for the gene set with DMCs or DMRs in their promoter. 
 
 * Examples of output files and directories in `DMR` for comparison pair sample1 and sample2
 
@@ -263,8 +263,10 @@ If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis`
 		* hyperDMC_detailed_count_methyl.txt : the number of hypermethylated DMCs in each promoter (methylation level *case* > *control*)
 		* intersection.DMC2Promoter.txt : a list of intersection between genes and DMCs
 		* DMC_genelist.txt : a list of genes with DMCs overlapped their promoter region
-		* DMC_gene.go_result.txt : a text output of GO enrichment test for genes with DMCs using g:Profiler
-		* DMC_gene.GOresult.pdf : Plots of GO enrichment test for genes with DMCs using g:Profiler 
+		* DMC_gene.GOresult.txt : a text output of GO enrichment test for genes with DMCs from methylKit using g:Profiler
+		* DMC_gene.GOresult.pdf : Plots of GO enrichment test for genes with DMCs from methylKit using g:Profiler 
+		* DMR_gene.GOresult.txt : a text output of GO enrichment test for genes with DMRs from BSmooth using g:Profiler
+		* DMR_gene.GOresult.pdf : Plots of GO enrichment test for genes with DMRs from BSmooth using g:Profiler 
 ___
 
 ## Using Docker
