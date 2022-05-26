@@ -1,0 +1,3 @@
+[submodule "bin/BSseeker2"]
+	path = bin/BSseeker2
+	url = https://github.com/BSSeeker/BSseeker2
