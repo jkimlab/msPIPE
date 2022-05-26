@@ -238,7 +238,7 @@ The output of methylation analysis will be in `Analysis` directory.
 * Output files and directories in `Analysis`
 
 	* avg_methlevel.pdf : a bar plot of average methylation level for CpG, CHG, and CHH context
-	* `annotations` : a directory with information of Genes, exons, introns, promoters, and intergenic regions in BED format files
+	* `annotations` : a directory with information of genes, exons, introns, promoters, and intergenic regions in BED format files
 	* `sample1` : a directory with all results of methylation analysis for *sample1*
 		* Average_methyl_lv.txt : average methylation level for each gene and its promoter
 		* Avg_Genomic_Context_CpG.txt : average methylation level for each genomic context (gene, exon, intron, promoter, and intergenic)
