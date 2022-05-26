@@ -280,7 +280,7 @@ cd msPIPE
 docker build -t jkimlab/mspipe:latest .
 ```
     
-- or you can pull docker image from the docker hub
+- Or you can pull docker image from the docker hub
     ```
     docker pull jkimlab/mspipe:latest
     ```
