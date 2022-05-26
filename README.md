@@ -4,6 +4,7 @@
 
 ## Requirements
 
+- R >= 4.1.3, python2 and python3
 - [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
 - [Samtools](http://www.htslib.org/)
 - [cutadapt](https://cutadapt.readthedocs.io/en/stable/)

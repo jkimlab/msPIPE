@@ -24,10 +24,10 @@ class Programs():
         self.bismark_methylation_extractor = 'bismark_methylation_extractor'
         self.bismark_bedgraph = 'bismark2bedGraph'
         
-
-        self.bs2_build = 'bs_seeker2-build.py'
-        self.bs2_align = 'bs_seeker2-align.py'
-        self.bs2_call = 'bs_seeker2-call_methylation.py'
+        bs2D = f'{binD}/BSseeker2'
+        self.bs2_build = f'{bs2D}/bs_seeker2-build.py'
+        self.bs2_align = f'{bs2D}/bs_seeker2-align.py'
+        self.bs2_call = f'{bs2D}/bs_seeker2-call_methylation.py'
         self.Rscript = 'Rscript'
         
         self.cutadapt = 'cutadapt'
