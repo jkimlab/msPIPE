@@ -271,7 +271,7 @@ ___
 
 ## Using Docker
 
-### build msPIPE docker image
+### Building msPIPE docker image
 
 ```
 git clone https://github.com/jkimlab/msPIPE.git
