@@ -100,7 +100,7 @@ You can choose the software to be used for analysis by selecting the module.
 #### Skip options
 You can leave out some pipeline steps with the *--skip_\<STEP\>* option.  
 The main steps of the entire pipeline and the steps that can be omitted are as follows.
-1. **<span style="color:DarkslateGray">check all input<span>**. 
+1. **<span style="color:DarkslateGray">Check all input<span>**. 
 2. **<span style="color:DarkslateGray">Prepare bisulfite-converted reference genome (Bismark or BS-Seeker2)<span>**  
 	- It will be skipped if the same assembly name of the bisulfite genome has already been created under msPIPE/reference/ directory.
 3. **<span style="color:DarkslateGray">WGBS reads trimming  (TrimGalore)<span>**
