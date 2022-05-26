@@ -251,7 +251,7 @@ The output of methylation analysis will be in `Analysis` directory.
 		* Genomic_Context_CpG.pdf : a bar plot for average methylation level of each genomic context (gene, exon, intron, promoter, and intergenic)
 		* hist_sample1_CXX.pdf : the distribution of methylation in CX context (CXX is one of CpG, CHG, and CHH)
 
-If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis` directory. When the DMC/DMR analysis is performed, GO enrichment test will be carried out for the gene set with DMCs in their promoter. 
+If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis` directory. When the DMC/DMR analysis is performed using *methylKit*, GO enrichment test will be carried out for the gene set with DMCs in their promoter. 
 
 * Examples of output files and directories in `DMR` for comparison pair sample1 and sample2
 
