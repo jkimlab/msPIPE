@@ -13,9 +13,13 @@ BiocManager::install("rtracklayer");
 BiocManager::install("BSgenome");
 BiocManager::install("methylKit");
 BiocManager::install("MethylSeekR");
+BiocManager::install("bsseq")
+BiocManager::install("BiocParallel")
+
 install.packages("circlize");
 install.packages("MASS");
 install.packages("stringi");
 install.packages("ggplot2");
+install.packages("gprofiler2");
 install.packages("doParallel");
 install.packages("foreach");

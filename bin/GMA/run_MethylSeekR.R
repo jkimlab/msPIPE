@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
-library(BSgenome);
-library(MethylSeekR);
-library(parallel);
-library("stringi");
+suppressMessages(library('BSgenome'));
+suppressMessages(library('MethylSeekR'));
+suppressMessages(library('parallel'));
+suppressMessages(library("stringi"));
 set.seed(123);
 
 args <- commandArgs(TRUE);
@@ -14,8 +14,17 @@ file <- args[4];
 out_dir <- args[5];
 
 av_gen <- available.genomes(splitNameParts=TRUE);
+package_name <- toString(av_gen[av_gen[,4]==assembly_version,1][1])
+print(package_name)
+
 index<-grep(assembly_version,av_gen$pkgname);
-library(av_gen$pkgname[index[1]],character.only = TRUE);
+
+# install package
+if(!require(package_name,character.only = TRUE)) {
+	BiocManager::install(package_name,character.only = TRUE)
+}
+library(package_name,character.only = TRUE);
+
 organism_name <- get(stri_split_lines1(av_gen$organism[index[1]]));
 av_gen$pkgname[index[1]];
 sLengths=seqlengths(organism_name);
