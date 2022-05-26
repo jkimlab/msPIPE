@@ -256,6 +256,7 @@ If DMC/DMR analysis is performed, `DMR` directory will be created in `Aanlaysis`
 * Examples of output files and directories in `DMR` for comparison pair sample1 and sample2
 
 	* `sample1.sample2` : a directory with all results of DMC/DMR analysis, in this case sample1 will be treated as *control* and sample2 will be treated as *case*
+		* DMR_0.5.bed : information of differentially methylated regions
 		* `methylkit` : output of running methylKit
 		* DMC_q0.5.bed : filtered DMCs with q-value 0.5
 		* hypoDMC_detailed_count_methyl.txt : the number of hypomethylated DMCs in each promoter (methylation level *case* < *control*)
