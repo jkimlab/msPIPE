@@ -103,19 +103,19 @@ The main steps of the entire pipeline and the steps that can be omitted are as f
 1. **<span style="color:DarkslateGray">check all input<span>**. 
 2. **<span style="color:DarkslateGray">Prepare bisulfite-converted reference genome (Bismark or BS-Seeker2)<span>**  
 	- It will be skipped if the same assembly name of the bisulfite genome has already been created under msPIPE/reference/ directory.
-3. **<span style="color:DarkslateGray">WGBS reads trimming.  (TrimGalore)<span>**
+3. **<span style="color:DarkslateGray">WGBS reads trimming  (TrimGalore)<span>**
 	- Can drop with *--skip_trimming* option.
 	- Trimmed reads to be used in mapping can be delivered through the TRIMMED_FILE_* parameters. ([LIB1] on below format)
 	- Without TRIMMED_FILE_* parameters, the pipeline searches the files on the output directory.
-4. **<span style="color:DarkslateGray">WGBS reads mapping.  (Bismark or BS-Seeker2)<span>**
+4. **<span style="color:DarkslateGray">WGBS reads mapping  (Bismark or BS-Seeker2)<span>**
 	- Can drop with *--skip_mapping* option.
 	- Mapping file to be used in the next step can be delivered through the BAM_FILE parameter. ([LIB2] on below format)
 	- Without BAM_FILE parameter, the pipeline searches the file on the output directory.
-5. **<span style="color:DarkslateGray">Methylation calling. (Bismark or BS-Seeker2)<span>**
+5. **<span style="color:DarkslateGray">Methylation calling (Bismark or BS-Seeker2)<span>**
 	- Can drop with *--skip_calling* option.
 	- Pipeline use calling output on the output directory.
 	- Other msPIPE calling output can be given with the *--calling_data* option.
-6. **<span style="color:DarkslateGray">Gene-Methylation analysis ( Methylation profiling and Hypomethylated region analysis )<span>**
+6. **<span style="color:DarkslateGray">Gene-Methylation analysis (Methylation profiling and Hypomethylated region analysis)<span>**
 	- Can drop with *--skip_GMA* option.
 7. **<span style="color:DarkslateGray">Differential methylation analysis<span>**
 	- Can drop with *--skip_DMR* option.  
