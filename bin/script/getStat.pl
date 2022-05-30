@@ -126,5 +126,5 @@ for(my $i = 0; $i <= $#r; $i++){
 close(FSTAT);
 close(FTSSDIST);
 close(FDIST);
-`awk '\$8==0' $out_dir/detailed_count.txt > $out_dir/hyperDMR_detailed_count_methyl`;
-`awk '\$7==0' $out_dir/detailed_count.txt > $out_dir/hypoDMR_detailed_count_methyl`;
+`awk '\$8==0' $out_dir/detailed_count.txt > $out_dir/hyperDMC_detailed_count_methyl.txt`;
+`awk '\$7==0' $out_dir/detailed_count.txt > $out_dir/hypoDMC_detailed_count_methyl.txt`;

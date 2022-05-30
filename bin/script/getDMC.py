@@ -80,7 +80,7 @@ for l in open(methF, 'r'):
 path = outF.split('/')
 reformF = '/'.join(path[:-1]) + '/reform.' + path[-1]
 O2 = open(reformF, 'w' )
-header = f'chr\tstart\tend\tmethyl(per)_{case_name}\tmethyl(per)_{con_name}\n'
+header = f'chr\tstart\tend\tmethyl(per)_{case_name}\tmethyl(per)_{con_name}\tq_val\tmeth_diff\n'
 O2.write(header)
 for ch in sorted(levelD.keys()):
     for start in sorted(levelD[ch].keys()):

@@ -19,12 +19,19 @@ class Programs():
        # Requirment
         self.trim_galore = 'trim_galore'
         self.samtools = 'samtools'
+<<<<<<< HEAD
 
         bismarkD = f'{binD}/Bismark'
         self.bismark = f'{bismarkD}/bismark'
         self.bismark_indexing = f'{bismarkD}/bismark_genome_preparation'
         self.bismark_methylation_extractor = f'{bismarkD}/bismark_methylation_extractor'
         self.bismark_bedgraph = f'{bismarkD}/bismark2bedGraph'
+=======
+        self.bismark = 'bismark'
+        self.bismark_indexing = 'bismark_genome_preparation'
+        self.bismark_methylation_extractor = 'bismark_methylation_extractor'
+        self.bismark_bedgraph = 'bismark2bedGraph'
+>>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
         
         bs2D = f'{binD}/BSseeker2'
         self.bs2_build = f'{bs2D}/bs_seeker2-build.py'

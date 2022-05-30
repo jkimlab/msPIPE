@@ -67,6 +67,7 @@ while(<FPARAM>){
 						print"... done\n";
 
 						## merge genes
+
 						`$bedtools sort -i $annot_dir/gene.bed > $annot_dir/sorted.gene.bed`;
 						`mv $annot_dir/sorted.gene.bed $annot_dir/gene.bed`;
 						`$bedtools merge -i $annot_dir/gene.bed > $annot_dir/merge.gene.bed`;
@@ -113,6 +114,7 @@ while(<FPARAM>){
 		}
 }
 close(FPARAM);
+
 `faSize -detailed $ref_file > $out_dir/ref.size`;
 `grep -v "_" $out_dir/ref.size | awk '{print \$1 \"\t0\t\" \$2 \"\t.\tgvar\"}' - > $out_dir/Ideogram.bed`;
 `grep -v "_" $out_dir/ref.size | awk '{print \$1}' - > $out_dir/chr_list.txt`;
@@ -133,8 +135,8 @@ close(FPARAM);
 `awk '{print \$1 \"\t\" \$2 \"\t\" \$3  \"\tintron\t.\t.\"}' $annot_dir/intron.bed >> $annot_dir/Genomic_context.bed`;
 `awk '{print \$1 \"\t\" \$2 \"\t\" \$3  \"\tintergenic\t.\t.\"}' $annot_dir/intergenic.bed >> $annot_dir/Genomic_context.bed`;
 `$bedtools sort -i $annot_dir/Genomic_context.bed > $annot_dir/sort.Genomic_context.bed`;
-my $chr_list = "$out_dir/chr_list.txt";
 
+my $chr_list = "$out_dir/chr_list.txt";
 print STDERR "[GMA] Methylation analysis\n";
 print FLOG "[GMA] Methylation analysis\n";
 print STDERR "Rscript $Bin/check_MethylSeekR_avail.R $ref_name 2> $out_dir/log.check_MethylSeekR_avail.txt\n";
@@ -149,6 +151,7 @@ foreach my $data_type (sort keys(%hs_input)){
 
 		print STDERR "\t$data_type - CpG context analysis \n";
 		print FLOG "\t$data_type - CpG context analysis \n";
+
 		print STDERR "\t$Bin/GMA.make_Union.pl $ref_name $cpu $chr_list $hs_input{$data_type}{CpG} $out_dir/$data_type/union_CpG\n";
 		`$Bin/GMA.make_Union.pl $ref_name $cpu $chr_list $hs_input{$data_type}{CpG} $out_dir/$data_type/union_CpG`;
 
@@ -179,7 +182,7 @@ foreach my $data_type (sort keys(%hs_input)){
 		
 		print STDERR "\t$Bin/GMA.Calculate_methylLv_aroundTSS.pl $out_dir/$data_type/AroundTSS/methylation_in_bin.bed $annot_dir/gene.bed $range $step_size $bin_size > $out_dir/$data_type/AroundTSS/meth_lv.$data_type.txt\n";
 		`$Bin/GMA.Calculate_methylLv_aroundTSS.pl $out_dir/$data_type/AroundTSS/methylation_in_bin.bed $annot_dir/gene.bed $range $step_size $bin_size > $out_dir/$data_type/AroundTSS/meth_lv.$data_type.txt`;
-		
+	
 		if($c_msr == 1){
 				print STDERR "[GMA] UMRs and LMRs analysis\n";
 				print FLOG "[GMA] UMRs and LMRs analysis\n";

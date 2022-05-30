@@ -4,10 +4,14 @@
 
 ## Requirements
 
-- Trim Galore ([https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
-- Samtools ([http://www.htslib.org/](http://www.htslib.org/))
-- Bismark ([https://github.com/FelixKrueger/Bismark](https://github.com/FelixKrueger/Bismark))
-- cutadapt ([https://cutadapt.readthedocs.io/en/stable/](https://cutadapt.readthedocs.io/en/stable/))
+- R >= 4.1.3, python2 and python3
+- [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
+- [Samtools](http://www.htslib.org/)
+- [cutadapt](https://cutadapt.readthedocs.io/en/stable/)
+- [bowtie](http://bowtie-bio.sourceforge.net/index.shtml), [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
+- [Bismark](https://github.com/FelixKrueger/Bismark)
+- [BS-Seeker2](https://github.com/BSSeeker/BSseeker2)
+- Other required R packages can be installed via msPIPE/bin/script/Package_install.R.
 <br />
 
 *Or you can use msPIPE on docker without having to prepare the environment.* ***\< Recommended\>***  
@@ -57,50 +61,64 @@ The parameter file must contain information necessary for pipeline execution.
 
 ### Additional options  
 #### msPIPE options  
-```
-/PATH/TO/msPIPE/msPIPE.py -h
-usage: msPIPE.py [-h] --param params.conf --out PATH [--core int] [--qvalue float] [--skip_trimming]
-                 [--skip_mapping] [--skip_calling] [--calling_data PATH] [--skip_bedgraph] [--skip_GMA]
-                 [--skip_DMR]
-                 
+ ```
+ usage: msPIPE.py [-h] --param params.conf --out PATH [--core int] [--qvalue float] [--skip_trimming] [--program bismark or bs2]
+                            [--bsmooth] [--skip_mapping] [--skip_calling] [--calling_data PATH] [--skip_GMA] [--skip_DMR]
+
 optional arguments:
-    -h, --help            show this help message and exit
-    --param params.conf, -p params.conf
-                          config format parameter file
-    --out PATH, -o PATH   output directory
-    --core int, -c int    core (default:5)
-    --qvalue float, -q float
-                          q-value cutoff (default:0.5)
-    --skip_trimming       skip the trimgalore trimming
-    --skip_mapping        skip the bismark mapping
-    --skip_calling        skip the methylation calling
-    --calling_data PATH, -m PATH
-                          methylCALL directory
-    --skip_GMA            skip the Gene-Methyl analysis
-    --skip_DMR            skip the DMR analysis
+  -h, --help            show this help message and exit
+  --param params.conf, -p params.conf
+                        config format parameter file
+  --out PATH, -o PATH   output directory
+  --core int, -c int    core (default:5)
+  --qvalue float, -q float
+                        q-value cutoff (default:0.5)
+  --skip_trimming       skip the trimgalore trimming
+  --program bismark or bs2
+                        program option for mapping & calling
+  --bsmooth             use bsmooth for DMR analysis
+  --skip_mapping        skip the bismark mapping
+  --skip_calling        skip the methylation calling
+  --calling_data PATH, -m PATH
+                        methylCALL directory
+  --skip_GMA            skip the Gene-Methyl analysis
+  --skip_DMR            skip the DMR analysis
+
  ```
  
+
+#### Software options
+You can choose the software to be used for analysis by selecting the module.
+1. **<span style="color:DarkslateBlue">WGBS reads mapping & calling (--program bismark or bs2)<span>**.  
+	Use this option to select the tools to be used for mapping and calling of wgbs reads.  
+    --program bismark : use Bismark with bowtie2 (default)  
+    --program bs2 : use BS-Seeker2 with bowtie   
+    
+2. **<span style="color:DarkslateBlue">Differential methylation analysis (--bsmooth)<span>**  
+	With this option, BSmooth is used to analyze instead of methylKit and inhouse script.
+
+
 #### Skip options
 You can leave out some pipeline steps with the *--skip_\<STEP\>* option.  
 The main steps of the entire pipeline and the steps that can be omitted are as follows.
-1. **check all input**. 
-2. **Prepare bisulfite-converted reference genome (bismark_genome_preperation)**  
+1. **<span style="color:DarkslateGray">Check all input<span>**. 
+2. **<span style="color:DarkslateGray">Prepare bisulfite-converted reference genome (Bismark or BS-Seeker2)<span>**  
 	- It will be skipped if the same assembly name of the bisulfite genome has already been created under msPIPE/reference/ directory.
-3. **WGBS reads trimming.  (TrimGalore)**
+3. **<span style="color:DarkslateGray">WGBS reads trimming  (TrimGalore)<span>**
 	- Can drop with *--skip_trimming* option.
 	- Trimmed reads to be used in mapping can be delivered through the TRIMMED_FILE_* parameters. ([LIB1] on below format)
 	- Without TRIMMED_FILE_* parameters, the pipeline searches the files on the output directory.
-4. **WGBS reads mapping.  (Bismark)**
+4. **<span style="color:DarkslateGray">WGBS reads mapping  (Bismark or BS-Seeker2)<span>**
 	- Can drop with *--skip_mapping* option.
 	- Mapping file to be used in the next step can be delivered through the BAM_FILE parameter. ([LIB2] on below format)
 	- Without BAM_FILE parameter, the pipeline searches the file on the output directory.
-5. **Methylation calling. (Bismark)**
+5. **<span style="color:DarkslateGray">Methylation calling (Bismark or BS-Seeker2)<span>**
 	- Can drop with *--skip_calling* option.
 	- Pipeline use calling output on the output directory.
 	- Other msPIPE calling output can be given with the *--calling_data* option.
-6. **Gene-Methylation analysis ( Methylation profiling and Hypomethylated region analysis )**
+6. **<span style="color:DarkslateGray">Gene-Methylation analysis (Methylation profiling and Hypomethylated region analysis)<span>**
 	- Can drop with *--skip_GMA* option.
-7. **Differential methylation analysis**
+7. **<span style="color:DarkslateGray">Differential methylation analysis<span>**
 	- Can drop with *--skip_DMR* option.  
 
 * params_format.conf
@@ -196,9 +214,65 @@ ___
 
 ___
 
+## Analysis Output
+
+All output created by msPIPE will be written to the `methylCALL` and `Analysis` directories in the given `output` directory.
+The output of pre-processing (read files processed by trimming and quality control), alignment, and methylation calling for each input library (named with LIB_NAME in config file) will be in `methylCALL` directory.
+The output of methylation analysis will be in `Analysis` directory. 
+
+* An example output structure of `Analysis` directory
+
+	```
+	[Analysis]
+	|- avg_methlevel.pdf
+	|- [annotations]
+	|- [sample1]
+	   |- ALL_TEXTFILES_AND_PLOTS_FOR_SAMPLE1
+	   |- [AroundTSS]
+	   |- [MethylSeekR]
+	|- [sample2]
+	   |- ...
+	|- [DMR]
+	   |- [sample1.sample2]
+	```
+
+* Output files and directories in `Analysis`
+
+	* avg_methlevel.pdf : a bar plot of average methylation level for CpG, CHG, and CHH context
+	* `annotations` : a directory with information of genes, exons, introns, promoters, and intergenic regions in BED format files
+	* `sample1` : a directory with all results of methylation analysis for *sample1*
+		* Average_methyl_lv.txt : average methylation level for each gene and its promoter
+		* Avg_Genomic_Context_CpG.txt : average methylation level for each genomic context (gene, exon, intron, promoter, and intergenic)
+		* CXX_methylCalls.bed : all methylation calls for each CX context (CXX is one of CpG, CHG, and CHH)
+		* `AroundTSS`/meth_lv_3M.txt : for each gene, average methylation levels in bins around TSS (+/- 1500 bp)
+		* `MethylSeekR` : a directory with all results for running MethylSeekR
+		* UMR-Promoter.cnt.bed : the number of UMRs in each promoter region
+		* UMR-Promoter.pos.bed : the genomic coordinates of UMRs in each promoter region
+		* Circos.CpG_UMRs_LMRs.pdf : a circos plot for methylation level in whole-genome scale
+		* Genomic_Context_CpG.pdf : a bar plot for average methylation level of each genomic context (gene, exon, intron, promoter, and intergenic)
+		* hist_sample1_CXX.pdf : the distribution of methylation in CX context (CXX is one of CpG, CHG, and CHH)
+
+If DMC/DMR analysis is performed, `DMR` directory will be created in `Analysis` directory. When the DMC/DMR analysis is performed, GO enrichment test will be carried out for the gene set with DMCs or DMRs in their promoter. 
+
+* Examples of output files and directories in `DMR` for comparison pair sample1 and sample2
+
+	* `sample1.sample2` : a directory with all results of DMC/DMR analysis, in this case sample1 will be treated as *control* and sample2 will be treated as *case*
+		* DMR_q0.5.bed : information of differentially methylated regions
+		* `methylkit` : output of running methylKit
+		* DMC_q0.5.bed : filtered DMCs with q-value 0.5
+		* hypoDMC_detailed_count_methyl.txt : the number of hypomethylated DMCs in each promoter (methylation level *case* < *control*)
+		* hyperDMC_detailed_count_methyl.txt : the number of hypermethylated DMCs in each promoter (methylation level *case* > *control*)
+		* intersection.DMC2Promoter.txt : a list of intersection between genes and DMCs
+		* DMC_genelist.txt : a list of genes with DMCs overlapped their promoter region
+		* DMC_gene.GOresult.txt : a text output of GO enrichment test for genes with DMCs from methylKit using g:Profiler
+		* DMC_gene.GOresult.pdf : Plots of GO enrichment test for genes with DMCs from methylKit using g:Profiler 
+		* DMR_gene.GOresult.txt : a text output of GO enrichment test for genes with DMRs from BSmooth using g:Profiler
+		* DMR_gene.GOresult.pdf : Plots of GO enrichment test for genes with DMRs from BSmooth using g:Profiler 
+___
+
 ## Using Docker
 
-### build msPIPE docker image
+### Building msPIPE docker image
 
 ```
 git clone https://github.com/jkimlab/msPIPE.git
@@ -206,7 +280,7 @@ cd msPIPE
 docker build -t jkimlab/mspipe:latest .
 ```
     
-- or you can pull docker image from the docker hub
+- Or you can pull docker image from the docker hub
     ```
     docker pull jkimlab/mspipe:latest
     ```
@@ -264,4 +338,3 @@ docker build -t jkimlab/mspipe:latest .
  ## CONTACT
 
 [bioinfolabkr@gmail.com](mailto:bioinfolabkr@gmail.com)
-
