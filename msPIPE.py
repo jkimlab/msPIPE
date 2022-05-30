@@ -129,6 +129,8 @@ def check_inputs(refD):
                 # ----------------------
                 if args.skip_trimming: # skip_trimming, input = LIB.TRIMMED_FILE1,2:
                     if 'trimmed_file_1' in lib.param_keys():
+                        sub.call(f'mkdir -p {dataD}', shell=True )
+                        
                         if lib.lib_type == 'P':
                             ## Use input in parameter file
                             inputcpCMD =  f'cp {lib.trimmed_file_1} {dataD}/{lib.lib_name}_val_1.fq'
@@ -431,8 +433,21 @@ def Bismark_mapping(callD, refD):
             return False
         else: 
             printlog(log_proc, '\n\t.. done\n')
-            multi_returns = pool.map(multi_run_wrapper, sortCMD_list)
             
+            if args.program == 'bismark': ## rename bismark result
+                for i in range(len(LIBs)):
+                    LIB = LIBs[i]
+                    cur_lib = f'LIB{i+1}'
+                    libD = callD +'/'+ LIB.lib_name
+                    dataD = libD + '/data'
+
+                    bamF = f'{dataD}/{LIB.lib_name}_{args.program}.bam'
+                    sub.call(f'mv {dataD}/*_bismark_bt2*.bam {bamF}', shell=True)
+                    sub.call(f'mv {dataD}/*_bismark_bt2_*report.txt {dataD}/{LIB.lib_name}_bismark_mapping_report.txt', shell=True)
+            
+            ## sort bamfile
+            multi_returns = pool.map(multi_run_wrapper, sortCMD_list)
+                
             for i in range(len(LIBs)):
                 LIB = LIBs[i]
                 cur_lib = f'LIB{i+1}'
@@ -442,11 +457,6 @@ def Bismark_mapping(callD, refD):
                 sorted_bamF = f'{dataD}/{LIB.lib_name}_{args.program}.sorted.bam'
                 LIB.bam_file = sorted_bamF
 
-                if args.program == 'bismark':
-                    sub.call(f'mv {dataD}/*.bam {sorted_bamF}', shell=True)
-                    sub.call(f'mv {dataD}/*bismark*_report.txt {dataD}/{LIB.lib_name}_bismark_mapping_report.txt', shell=True)
-                
-                
                 ##2.5 multiQC
                 cmd = f'{prog.multiqc} {dataD} -o {libD}'
                 call_return = subproc(cmd, 'stdout',log_proc)
@@ -485,7 +495,7 @@ def Bismark_calling(callD):
 
         ##3.calling:  Methylation extractor
         if not args.skip_calling:
-            cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --no_overlap --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/Bisulfite_Genome -o {methylD} {LIB.bam_file}'
+            cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --no_overlap --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/ -o {methylD} {LIB.bam_file}'
             callingCMD_list.append( [cmd, f'{libD}/logs/log.Bismark_call.txt',log_proc ] )
         
         ##4.bedGraph
@@ -578,7 +588,7 @@ def BS2_calling(callD):
 
         ##3.calling:  BSseeker2 bs_call_methylation
         if not args.skip_calling:
-            cmd = f'python2 {prog.bs2_call} -i {LIB.bam_file} -o {methylD}/bs2_call --sorted --rm-overlap -d {REF.refD}/{REF.ucsc_name}.fa_bowtie 1> log.bs2_call.txt'
+            cmd = f'python2 {prog.bs2_call} -i {LIB.bam_file} -o {methylD}/bs2_call --sorted --rm-overlap -d {REF.refD}/{REF.ucsc_name}.fa_bowtie 1> {libD}/logs/log.bs2_call.txt'
             callingCMD_list.append( [cmd, f'{libD}/logs/log.bs2_call.txt',log_proc ] )
             convertCMD_list.append( [f'{prog.bs22bismark} {methylD}/bs2_call.CGmap {libD}/{LIB.lib_name}','stdout',log_proc ])
             

@@ -85,7 +85,7 @@ RUN conda install -c bioconda bowtie
 RUN git clone https://github.com/BenLangmead/bowtie2.git
 WORKDIR bowtie2
 RUN make
-WORKDIR cd /
+WORKDIR /
 ENV PATH /bowtie2:$PATH
 
 #RUN conda install -c bioconda bismark
@@ -104,14 +104,14 @@ RUN mkdir -p /msPIPE
 COPY lib /msPIPE/lib
 COPY bin /msPIPE/bin
 COPY msPIPE.py /msPIPE/
-RUN Rscript /msPIPE/bin/script/Package_install.R
 
 
-RUN wget https://github.com/bedops/bedops/releases/download/v2.4.39/bedops_linux_x86_64-v2.4.39.tar.bz2
+RUN wget -q https://github.com/bedops/bedops/releases/download/v2.4.39/bedops_linux_x86_64-v2.4.39.tar.bz2
 RUN tar jxvf bedops_linux_x86_64-v2.4.39.tar.bz2
 ENV PATH /msPIPE:$PATH
 ENV PATH $CONDA_DIR/bin/cutadapt:$PATH
 
+RUN Rscript /msPIPE/bin/script/Package_install.R
 
 RUN mkdir -p /work_dir
 WORKDIR /work_dir
