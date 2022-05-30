@@ -128,7 +128,6 @@ def check_inputs(refD):
 
                 # ----------------------
                 if args.skip_trimming: # skip_trimming, input = LIB.TRIMMED_FILE1,2:
-<<<<<<< HEAD
                     if 'trimmed_file_1' in lib.param_keys():
                         if lib.lib_type == 'P':
                             ## Use input in parameter file
@@ -174,42 +173,6 @@ def check_inputs(refD):
                     else:            
                         datadir_list = os.listdir( dataD )
                     
-=======
-                    if not 'trimmed_file_1' in lib.param_keys():    # When there's no input trimming file, search for pipeline output
-                        if lib.lib_type == 'P':
-                            lib.trimmed_file_1 = f'{dataD}/{lib.lib_name}_val_1.fq.gz'
-                            lib.trimmed_file_2 = f'{dataD}/{lib.lib_name}_val_2.fq.gz'
-                        
-                        else:
-                            lib.trimmed_file_1 = f'{dataD}/{lib.lib_name}_trimmed.fq.gz'
-                
-                    if not os.path.exists(lib.trimmed_file_1) :
-                        ## Use input in parameter file
-                        lib.trimmed_file_1 = lib.file_1
-
-                        if not os.path.exists(lib.trimmed_file_1) :
-                            check_line += f'\n*** TRIMMED_FILE_1({lib.trimmed_file_1}) is not existed'
-                            exit = True    
-
-                    if lib.lib_type == 'S': continue # pass to check file2 when libtype is single end
-                    
-                    if not os.path.exists(lib.trimmed_file_2):
-                        lib.trimmed_file_2 = lib.file_2
-
-                        if not os.path.exists(lib.trimmed_file_2) :
-                            check_line += f'\n*** TRIMMED_FILE_2({lib.trimmed_file_2}) is not existed'
-                            exit=True
-
-                if args.skip_calling: # skip_calling, input = methylCALL
-                    ## check output path
-                    if not os.path.exists(dataD):
-                        check_line += f'\n*** data directory({dataD}) is not existed'
-                        exit = True 
-                        continue
-                    else:            
-                        datadir_list = os.listdir( dataD )
-                    
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
                     if not os.path.exists(args.calling_data):
                         check_line += f'\n*** calling data ({args.calling_data}) is not existed (skip_calling)'
                         exit = True
@@ -453,18 +416,12 @@ def Bismark_mapping(callD, refD):
                 cmd_align += f' -1 {LIB.trimmed_file_1} -2 {LIB.trimmed_file_2}'
             elif LIB.lib_type == 'S':
                 cmd_align += f'-i {LIB.trimmed_file_1}'
-<<<<<<< HEAD
 
             cmd_align += f' -m 0 --aligner=bowtie -g {REF.fastaF} --db {refD} --temp_dir={tmpD} -o {bamF}'
             logF = f'{libD}/logs/log.bs2_align.txt'
             cmd_align += f' 1> {logF}'
 
             CMD_list.append( [cmd_align, logF,log_proc ] )
-=======
-
-            cmd_align += f' -m 0 --aligner=bowtie -g {REF.fastaF} --db {refD} --temp_dir={tmpD} -o {bamF}'
-            CMD_list.append( [cmd_align, f'{libD}/logs/log.bs2_align.txt',log_proc ] )
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
     
 
     with Pool(int(job_number)) as pool:
@@ -483,20 +440,12 @@ def Bismark_mapping(callD, refD):
                 dataD = libD + '/data'
                 
                 sorted_bamF = f'{dataD}/{LIB.lib_name}_{args.program}.sorted.bam'
-<<<<<<< HEAD
                 LIB.bam_file = sorted_bamF
-=======
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
 
                 if args.program == 'bismark':
                     sub.call(f'mv {dataD}/*.bam {sorted_bamF}', shell=True)
                     sub.call(f'mv {dataD}/*bismark*_report.txt {dataD}/{LIB.lib_name}_bismark_mapping_report.txt', shell=True)
                 
-<<<<<<< HEAD
-=======
-                multi_returns = pool.map(multi_run_wrapper, sortCMD_list)
-                LIB.bam_file = sorted_bamF
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
                 
                 ##2.5 multiQC
                 cmd = f'{prog.multiqc} {dataD} -o {libD}'
@@ -654,11 +603,7 @@ def BS2_calling(callD):
                 printlog(log_proc, '\n\tBSseeker2 bs2_call_methylation .. done')
 
         ## -------
-<<<<<<< HEAD
         sub.call(f'gzip -q -d {callD}/*/methylcontext/*gz',shell=True)
-=======
-        sub.call(f'gzip -d {callD}/*/methylcontext/*gz',shell=True)
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
 
         ## convert bs2 result to bismark format
         with Pool(int(job_number)) as pool:
@@ -877,7 +822,6 @@ def VISandDMR(outD):
                 ## BSmooth
                 bsmooth_cmd = f'{prog.Rscript} {prog.bsmooth} {analD}/bsmooth_param.txt {control},{case} {resultD} {args.qvalue} 1> {anal_logD}/log.DMR_BSmooth.txt'
                 bsmooth_return = subproc(bsmooth_cmd, f'{anal_logD}/log.DMR_BSmooth.txt',log_proc)
-<<<<<<< HEAD
             
 
                 methylLevelF = f"{analD}/DMR_q{args.qvalue}.bed"
@@ -900,30 +844,6 @@ def VISandDMR(outD):
 
                 subproc(f'{prog.Rscript} {prog.gprofiler} {dmc_genelistF} {REF.ucsc_name} {analD}/DMR_gene', f'{anal_logD}/log.gprofiler.txt',log_proc)
             
-=======
-            
-
-                methylLevelF = f"{analD}/DMR_q{args.qvalue}.bed"
-            
-            # convert 
-                reformF = f'{analD}/reform.DMR_q{args.qvalue}.bed'
-                cmd_bsreform = f'{prog.bsmoothreform} {methylLevelF} 1> {reformF}' 
-                subproc(cmd_bsreform, "stdout",log_proc)
-
-            ##get methylation Levels on promoter region
-                intersect_promoterF = f'{analD}/intersection.DMR2Promoter.txt'
-                cmd_intersect = f'bedtools intersect -wa -wb -a {promoterF} -b {reformF} > {intersect_promoterF}'
-                subproc(cmd_intersect, "stdout",log_proc)
-
-
-            ## gprofiler
-                dmc_genelistF = f'{analD}/DMR_genelist.txt'
-                cmd_genename= f'cut -f 4 {intersect_promoterF} | cut -d \';\' -f1| cut -d \':\' -f2 |sort -u > {dmc_genelistF}'
-                subproc(cmd_genename, "stdout",log_proc)
-
-                subproc(f'{prog.Rscript} {prog.gprofiler} {dmc_genelistF} {REF.ucsc_name} {analD}/DMR_gene', f'{anal_logD}/log.gprofiler.txt',log_proc)
-            
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
                 return bsmooth_return
 
             else:

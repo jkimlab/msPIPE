@@ -41,20 +41,6 @@ RUN cpanm \
 ENV CONDA_DIR /opt/conda
 ENV PATH $CONDA_DIR/bin:$PATH
 
-<<<<<<< HEAD
-=======
-
-
-
-
-#RUN wget --quiet --no-check-certificate https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh && \
-#    echo "45c851b7497cc14d5ca060064394569f724b67d9b5f98a926ed49b834a6bb73a	*Anaconda3-2019.03-Linux-x86_64.sh" | sha256sum -c - && \
-#    /bin/bash /Anaconda3-2019.03-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
-#    rm Anaconda3-2019.03-Linux-x86_64.sh && \
-#    echo export PATH=$CONDA_DIR/bin:'$PATH' > /etc/profile.d/conda.sh
-
-
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
 RUN wget -q --no-check-certificate https://repo.anaconda.com/archive/Anaconda3-2022.05-Linux-x86_64.sh
 RUN echo "a7c0afe862f6ea19a596801fc138bde0463abcbce1b753e8d5c474b506a2db2d *Anaconda3-2022.05-Linux-x86_64.sh" | sha256sum -c - && \
     /bin/bash /Anaconda3-2022.05-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
@@ -88,7 +74,6 @@ RUN conda install -c bioconda ucsc-wigtobigwig
 RUN conda install -c bioconda fastqc
 RUN conda install -c bioconda samtools
 
-<<<<<<< HEAD
 ## bs2
 RUN pip2 install --upgrade setuptools
 RUN pip2 install pysam
@@ -106,14 +91,6 @@ ENV PATH /bowtie2:$PATH
 #RUN conda install -c bioconda bismark
 #RUN conda install -c bioconda/label/cf201901 bismark
 
-=======
-RUN conda install -c bioconda bowtie
-
-###
-RUN conda install -c bioconda/label/broken bowtie2
-
-RUN conda install -c bioconda bismark
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
 RUN pip install multiqc
 RUN pip install cutadapt
 
@@ -122,13 +99,6 @@ RUN curl -fsSL https://github.com/FelixKrueger/TrimGalore/archive/0.6.6.tar.gz -
 RUN tar xvzf trim_galore.tar.gz
 ENV PATH /TrimGalore-0.6.6:$PATH
 
-<<<<<<< HEAD
-=======
-
-RUN git clone "https://github.com/BSSeeker/BSseeker2.git"
-ENV BS2 /BSseeker2
-ENV PATH $BS2:$PATH
->>>>>>> 8bd99478acddf4ab6f72ca7b810f24915461cd8a
 
 RUN mkdir -p /msPIPE
 COPY lib /msPIPE/lib
