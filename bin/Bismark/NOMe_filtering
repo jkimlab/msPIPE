@@ -1,0 +1,661 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+$|++;
+use Getopt::Long;
+use Cwd;
+use Carp;
+
+## This program is Copyright (C) 2010-21, Felix Krueger (felix.krueger@babraham.ac.uk)
+
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+my %chromosomes; # storing sequence information of all chromosomes/scaffolds
+my %processed;   # keeping a record of which chromosomes have been processed
+my $nome_version = 'v0.23.1';
+
+my ($output_dir,$genome_folder,$zero,$CpG_only,$CX_context,$split_by_chromosome,$parent_dir,$coverage_infile,$cytosine_out,$merge_CpGs,$gc_context,$gzip,$nome) = process_commandline();
+
+warn "Methylation call infile:\t\t$coverage_infile\n";
+warn "Genome directory:\t\t\t>$genome_folder<\n";
+
+if($nome){
+    warn "Sample specified as NOMe-Seq\t\tyes (only reporting ACG and TCG context)\n";
+}
+
+if($nome){
+    warn "Optional GC context track:\t\tyes (NOMe-Seq; only reporting GCA, GCC and GCT context)\n";
+}
+read_genome_into_memory();
+warn "Stored sequence information of ",scalar keys %chromosomes," chromosomes/scaffolds in total\n\n";
+
+### 22 03 2017
+per_read_filtering($coverage_infile);
+
+
+
+sub per_read_filtering {
+    
+    warn  "="x78,"\n";
+    warn "Methylation information will now be written into a genome-wide cytosine report\n";
+    warn  "="x78,"\n\n";
+    sleep (2);
+    
+    my $number_processed = 0;
+    
+    ### changing to the output directory again
+    unless ($output_dir eq ''){ # default
+	chdir $output_dir or die "Failed to change directory to $output_dir\n";
+	# warn "Changed directory to $output_dir\n";
+    }
+    
+    my $in = shift;
+    
+    # infiles handed over by the methylation extractor will be just the filename on their own. The directory should have been handed over with --dir
+    if ($in =~ /gz$/){
+	open (IN,"gunzip -c $in |") or die "Failed to read from gzipped file $in: $!\n"; # changed from gunzip -c to gunzip -c 08 04 16
+    }
+    else{
+	open (IN,"$in") or die "Failed to read from file $in: $!\n";
+    }
+    
+    ### note: we are still in the folder: $output_dir, so we do not have to include this into the open commands
+    unless ($cytosine_out =~ /\.gz$/){
+	$cytosine_out .= '.gz';
+    }
+    open (CYT,"| gzip -c - > $cytosine_out") or die "Failed to write to file $cytosine_out: $!\n";
+    print CYT join ("\t","ReadID","Chr","Start","End","meth_CG","unmeth_CG","meth_GC","unmeth_GC"),"\n"; 
+    warn ">>> Writing genome-wide cytosine report to: $cytosine_out <<<\n\n";
+    
+    my $last_read;
+    my $last_start; # entire read length. Input format is Start End for 
+    my $last_end;   # entire read length
+    my $last_chr;
+
+    my $read; # storing calls for one read at a time
+   
+    my $count = 0;
+    while (<IN>){
+	chomp;
+	next if ($_ =~ /^Bismark/);
+	++$count;
+	my ($id,$state,$chr,$pos,$context,$start,$end,$strand) = (split /\t/);
+	# print join (" ",$id,$state,$chr,$pos,$context,$start,$end,$strand),"\n"; sleep(1);
+	
+	# defining the first chromosome
+	unless (defined $last_read){
+	    $last_read = $id;
+	    $last_start = $start;
+	    $last_end = $end; 
+	    $last_chr = $chr;
+	    # warn "Storing all covered cytosine positions for read: $id\n";
+	}
+	
+	if ($id eq $last_read){
+	    # warn "$id (same read)\t$pos\t$context\n";
+	    $read->{$pos}->{state} = $state;
+	    $read->{$pos}->{context} = $context;
+	}
+	else{
+	 
+	    ### Reached new read
+	    # warn "\n$id (new read)\n";sleep(1);
+	    
+	    ### Processing last stored read
+	    my $length;
+	    if ($last_end >= $last_start){ # forward read
+		$length = $last_end - $last_start + 1;
+	    }
+	    else{ # reverse read
+		$length = $last_start - $last_end + 1;
+	    }
+	 
+    	    # exract genome sequence for the last read
+	    # warn "Last Start: $last_start\nLast End: $last_end\nLength: $length\n";
+
+	    my $seq;
+	    my $ext_seq; # this sequence contains 2 additional bp at the start and end so that we can perform context calls in the cytosine lookup
+	    
+	    my $suitable = 0;
+	    
+	    if ($last_start - 2 > 1 and length($chromosomes{$last_chr}) >= ($last_start - 2 + $length + 4) ){ # making sure the extended sequence can be extracted
+		if ($last_end >= $last_start){
+		    $seq = substr($chromosomes{$last_chr},$last_start - 1,$length);
+		    $ext_seq = substr($chromosomes{$last_chr},$last_start - 3,$length + 4); # we potentially need 2 extra bases on either side for a context lookup
+		}
+		else{
+		    $seq = substr($chromosomes{$last_chr},$last_end - 1,$length);
+		    $ext_seq = substr($chromosomes{$last_chr},$last_end - 3,$length + 4); # we potentially need 2 extra bases on either side for a context lookup
+		}
+		#  warn "$seq\n$ext_seq\n";
+		$suitable = 1;
+	    }
+	    else{
+		# read is not suitable for processing because it lacks the up- and downstream context
+	    }
+	    if ($suitable){
+		++$number_processed;
+
+		### Need to pass in the true start of the read, so the end for reverse reads
+		if ($last_end >= $last_start){
+		    cytosine_lookup ($last_read,$last_chr,$seq,$last_start,$last_end,$ext_seq,$read);
+		}
+		else{
+		    cytosine_lookup ($last_read,$last_chr,$seq,$last_end,$last_start,$ext_seq,$read);
+		}
+	    }
+	    
+	    # Preparing for new read
+	    $last_read = $id;
+	    $last_start = $start;
+	    $last_end = $end;
+	    $last_chr = $chr;
+	    
+	    $read = (); # clearing positions
+	    $read->{$pos}->{state} = $state;
+	    $read->{$pos}->{context} = $context;
+	}
+    
+    }
+    
+    # If there never was a last read then something must have gone wrong with reading the data in
+    unless (defined $last_read){
+	die "No last read was defined, something must have gone wrong while reading the data in (e.g. was the input file empty?). Please check your command!\n\n";
+    }
+
+    ### process last read
+    my $length;
+    if ($last_end >= $last_start){ # forward read
+	$length = $last_end - $last_start + 1;
+    }
+    else{ # reverse read
+	$length = $last_start - $last_end + 1;
+    }
+    
+    # exract genome sequence for the last read
+    # warn "Last Start: $last_start\nLast End: $last_end\nLength: $length\n";
+
+    my $seq;
+    my $ext_seq; # this sequence contains 2 additional bp at the start and end so that we can perform context calls in the cytosine lookup
+    
+    my $suitable = 0;
+	    
+    if ($last_start - 2 > 1 and length($chromosomes{$last_chr}) >= ($last_start - 2 + $length + 4) ){ # making sure the extended sequence can be extracted
+	if ($last_end >= $last_start){
+	    $seq = substr($chromosomes{$last_chr},$last_start - 1,$length);
+	    $ext_seq = substr($chromosomes{$last_chr},$last_start - 3,$length + 4); # we potentially need 2 extra bases on either side for a context lookup
+	}
+	else{
+	    $seq = substr($chromosomes{$last_chr},$last_end - 1,$length);
+	    $ext_seq = substr($chromosomes{$last_chr},$last_end - 3,$length + 4); # we potentially need 2 extra bases on either side for a context lookup
+	}
+	#  warn "$seq\n$ext_seq\n";
+	$suitable = 1;
+    }
+    else{
+	# read is not suitable for processing because it lacks the up- and downstream context
+    }
+    
+    if ($suitable){ 
+	++$number_processed;
+	### Need to pass in the true start of the read, so the end for reverse reads
+	if ($last_end >= $last_start){
+	    cytosine_lookup ($last_read,$last_chr,$seq,$last_start,$last_end,$ext_seq,$read);
+	}
+	else{
+	    cytosine_lookup ($last_read,$last_chr,$seq,$last_end,$last_start,$ext_seq,$read);
+	}
+    }
+    
+    close IN or warn $!;
+
+    if ($nome){
+	warn "Finished writing out NOMe-Seq specific filtering report (only reporting CGs in ACG and TCG context; reporting GCs only when not in CG context).\n";
+	warn "Processed $number_processed reads in total.\n\n";
+    }
+    
+    close CYT or warn $!;
+    
+}
+
+
+
+
+
+
+
+########################################################
+#### SUBROUTINESSSSS
+########################################################
+
+sub cytosine_lookup{
+    
+    my ($id,$chr,$seq,$offset,$end,$ext_seq,$read) = @_; # start is the start of the sequence which we will use as the offset
+    # warn "  $seq\n$ext_seq\nOffset: $offset\tchr: $chr\n";	
+
+    my $strand;
+    my $tri_nt;
+    my $upstream_context; # for NOMe-Seq
+    my $context;
+
+    my ($meth_CG,$unmeth_CG,$meth_nonCG,$unmeth_nonCG) = (0,0,0,0); # keeping count for the entire read
+
+    # warn "Stored the following methylation info: \n";
+    foreach my $pos (keys %{$read}){
+	# warn "$pos\t$read->{$pos}->{state}\t$read->{$pos}->{context}\n";
+    }
+    # warn "\n";
+
+    while ($seq =~ /([CG])/g){ # C or G
+ 
+	my $pos = pos$seq;
+	
+	if ($1 eq 'C'){    # C on forward strand
+	    $tri_nt = substr ($ext_seq,$pos + 1,3);   # positions are 0-based!
+	    if ($nome){
+		$upstream_context = substr ($ext_seq,$pos,3);
+		# warn "$1\t$pos\t",$pos + $offset - 1,"\t$tri_nt\t$upstream_context\n"; sleep(1);
+	    }
+	    $strand = '+';
+	}
+	elsif ($1 eq 'G'){ # C on reverse strand
+	    
+	    $tri_nt = substr ($ext_seq,$pos - 1,3);   # positions are 0-based!
+	    $tri_nt = reverse $tri_nt;
+	    $tri_nt =~ tr/ACTG/TGAC/;
+	    
+	    if ($nome){
+		$upstream_context = substr ($ext_seq,$pos, 3);
+		$upstream_context = reverse $upstream_context;
+		$upstream_context =~ tr/ACTG/TGAC/;
+		# warn "$1\t$pos\t",$pos + $offset - 1,"\t$tri_nt\t$upstream_context\n"; sleep(1);
+	    }
+	    $strand = '-';
+	}
+	
+	next if (length$tri_nt < 3); # trinucleotide sequence could not be extracted
+    
+
+	### determining cytosine context	
+	if ($tri_nt =~ /^CG/){
+	    $context = 'CG';
+	}
+	elsif ($tri_nt =~ /^C.{1}G$/){
+	    $context = 'CHG';
+	}
+	elsif ($tri_nt =~ /^C.{2}$/){
+	    $context = 'CHH';
+	}
+	else{ # if the context can't be determined the positions will not be considered (it will equally not have been reported by Bismark)
+	    warn "The sequence context could not be determined (found: '$tri_nt'). Skipping.\n";
+	    next;
+	}
+	
+	if (exists $read->{$pos + $offset - 1}){
+	    # warn "Position was covered\nUpstream context: $upstream_context\ntrinuc context: $context\nreported context: ",$read->{$pos + $offset-1}->{context},"\n";
+	    
+	    # for NOMe-Seq (nucleosome occupancy and methylome sequencing) we limit the reporting of 
+	    # 1. CpGs to A-C-G and T-C-G
+	    # 2. GpC report files / cov files that only include G-C-A, G-C-C and G-C-T
+	    
+	    if ($context eq 'CG'){
+		if ( ($read->{$pos + $offset-1}->{context}) eq 'z' or ($read->{$pos + $offset-1}->{context}) eq 'Z'){
+		    # warn "Agreeing CG context calls. Fine!\n";
+		    if ( ($upstream_context eq 'ACG') or ($upstream_context eq 'TCG') ){ # filtering out NOMe-biased CG positions
+			# warn "Passed NOMe-filtering. Fine\n";
+			if( ($read->{$pos + $offset-1}->{state}) eq '+'){
+			    $meth_CG++;
+			}
+			elsif( ($read->{$pos + $offset-1}->{state}) eq '-' ){
+			    $unmeth_CG++
+			}
+			else{
+			    die "This should never happen\n";
+			}
+		    }
+		    else{
+			# warn "Potentially biased context, skipping\n";
+			next; # skipping this base
+		    }
+		    
+		}
+		else{
+		    # warn "Change in CG call context, disregarding...\n";
+		}
+	    }
+	    elsif($context eq 'CHG'){
+		if ( ($read->{$pos + $offset-1}->{context}) eq 'x' or ($read->{$pos + $offset-1}->{context}) eq 'X'){
+		    # warn "Agreeing CHG context calls. Fine!\n";
+		    if ( $upstream_context =~ /^GC/ ){ # this is a NOMe-relevant GC position
+			# warn "This is a GC positions! Fine\n";  
+                        if( ($read->{$pos + $offset-1}->{state}) eq '+'){
+                            $meth_nonCG++; 
+			} 
+			elsif( ($read->{$pos + $offset-1}->{state}) eq '-' ){
+   			    $unmeth_nonCG++                                                                                                                                               
+			}  
+			else{
+			    die "This should never happen\n";
+			}               
+		    }
+		}
+		else{
+		    # warn "Change in CHG call context, disregarding...\n";
+		}	
+	    }	    
+	    elsif($context eq 'CHH'){
+		if ( ($read->{$pos + $offset-1}->{context}) eq 'h' or ($read->{$pos + $offset-1}->{context}) eq 'H'){
+		    # warn "Agreeing CHH context calls. Fine!\n";
+		    if ( $upstream_context =~ /^GC/ ){ # this is a NOMe-relevant GC position
+			# warn "This is a GC positions! Fine\n";
+			if( ($read->{$pos + $offset-1}->{state}) eq '+'){
+			    $meth_nonCG++;
+			}
+			elsif( ($read->{$pos + $offset-1}->{state}) eq '-' ){
+			    $unmeth_nonCG++                                                                                                                                                
+			}    
+			else{
+			    die "This should never happen\n";                                                                                    
+                        }                                                                                               
+                    }              
+		}
+		else{
+		    # warn "Change in call context, disregarding...\n";
+		}
+	    }
+	    else{
+		die "Context was neither CG, CHG nor CHH, but: $tri_nt!\n\n";	
+	    }
+	    # warn "\n";
+	}
+	else{
+	    # warn "Position was not covered\n";
+	}
+    
+    }
+   
+    ### Printing out the NOMe-Seq filtered reads with their associated methylated/unmethylated counts
+    print CYT join ("\t",$id,$chr,$offset,$end,$meth_CG,$unmeth_CG,$meth_nonCG,$unmeth_nonCG),"\n";
+
+}
+
+
+sub process_commandline{
+    my $help;
+    my $genome_folder;
+    
+    my $cytosine_out;
+    my $parent_dir;
+    my $version;
+    my $merge_CpGs;
+    my $gc_context;
+    my $nome = 1; 
+
+    my $command_line = GetOptions ('help|man'               => \$help,
+				   'dir=s'                  => \$output_dir,
+				   'g|genome_folder=s'      => \$genome_folder,
+				   "zero_based"             => \$zero,	
+				   "CX|CX_context"          => \$CX_context,
+				   'parent_dir=s'           => \$parent_dir,
+				   'version'                => \$version,
+				   'merge_CpGs'             => \$merge_CpGs,
+				   'GC|GC_context'          => \$gc_context,
+				   'gzip'                   => \$gzip,
+				   'nome-seq'               => \$nome,
+	);
+
+    ### EXIT ON ERROR if there were errors with any of the supplied options
+    unless ($command_line){
+	die "Please respecify command line options\n";
+    }
+
+    ### HELPFILE
+    if ($help){
+	print_helpfile();
+	exit;
+    }
+
+    if ($version){
+	print << "VERSION";
+
+
+                Bismark NOMe_filtering, Version: $nome_version
+
+          Copyright 2010-19 Felix Krueger, Babraham Bioinformatics
+	    www.bioinformatics.babraham.ac.uk/projects/bismark/
+                  https://github.com/FelixKrueger/Bismark
+
+
+VERSION
+	  exit;
+    }
+
+    ### no files provided
+    unless (@ARGV){
+	warn "You need to provide a Bismark coverage file (with counts methylated/unmethylated cytosines) to create an individual C methylation output. Please respecify!\n";
+	sleep(2);
+
+	print_helpfile();
+	exit;
+    }
+
+    my $coverage_infile = shift @ARGV;
+    unless (-e $coverage_infile){
+	die "File did not exist in the current directory.\n";
+    }
+
+    unless ($parent_dir){
+	$parent_dir = getcwd();
+    }
+    unless ($parent_dir =~ /\/$/){
+	$parent_dir =~ s/$/\//;
+    }
+    
+    # deriving output file
+    $cytosine_out = $coverage_infile;
+    $cytosine_out =~ s/\.gz$//;
+    $cytosine_out =~ s/\.txt$//;
+    $cytosine_out =~ s/$/.manOwar.txt/; # https://en.wikipedia.org/wiki/Man-of-war_fish
+    
+    ### OUTPUT DIR PATH
+    if (defined $output_dir){
+	unless ($output_dir eq ''){ # if the output dir has been passed on by the methylation extractor and is an empty string we don't want to change it
+	    unless ($output_dir =~ /\/$/){
+		$output_dir =~ s/$/\//;
+	    }
+	}
+    }
+    else{
+	$output_dir = '';
+    }
+
+    unless ($CX_context){
+	$CX_context = 0;
+	$CpG_only = 1;
+    }
+
+    ### GENOME folder
+    if ($genome_folder){
+	unless ($genome_folder =~/\/$/){
+	    $genome_folder =~ s/$/\//;
+	}
+    }
+    else{
+	die "Please specify a genome folder to proceed (full path only)\n";
+    }
+
+    if ($merge_CpGs){
+	if ($CX_context){
+	    die "Merging individual CpG calls into a single CpG dinucleotide entity is currently only supported if CpG-context is selected only (lose the option --CX)\n";
+	}
+	if ($split_by_chromosome){
+	    die "Merging individual CpG calls into a single CpG dinucleotide entity is currently only supported if a single CpG report is written out (lose the option --split_by_chromosome)\n";
+	}
+    }
+    
+    if ($nome){
+	unless ($gc_context){
+	    warn "Sample specified as NOMe-Seq. Also setting `--gc` context\n\n";
+	    $gc_context = 1;
+	}
+    }
+    
+    return ($output_dir,$genome_folder,$zero,$CpG_only,$CX_context,$split_by_chromosome,$parent_dir,$coverage_infile,$cytosine_out,$merge_CpGs,$gc_context,$gzip,$nome);
+}
+
+sub read_genome_into_memory{
+
+    ## reading in and storing the specified genome in the %chromosomes hash
+    chdir ($genome_folder) or die "Can't move to $genome_folder: $!";
+    warn "Now reading in and storing sequence information of the genome specified in: $genome_folder\n\n";
+
+    my @chromosome_filenames =  <*.fa>;
+
+    ### if there aren't any genomic files with the extension .fa we will look for files with the extension .fasta
+    unless (@chromosome_filenames){
+	@chromosome_filenames =  <*.fasta>;
+    }
+    unless (@chromosome_filenames){
+	die "The specified genome folder $genome_folder does not contain any sequence files in FastA format (with .fa or .fasta file extensions)\n";
+    }
+
+    foreach my $chromosome_filename (@chromosome_filenames){
+
+	# skipping the tophat entire mouse genome fasta file
+	next if ($chromosome_filename eq 'Mus_musculus.NCBIM37.fa');
+
+	open (CHR_IN,$chromosome_filename) or die "Failed to read from sequence file $chromosome_filename $!\n";
+	### first line needs to be a fastA header
+	my $first_line = <CHR_IN>;
+	chomp $first_line;
+	$first_line =~ s/\r//; # removing /r carriage returns
+
+	### Extracting chromosome name from the FastA header
+	my $chromosome_name = extract_chromosome_name($first_line);
+	
+	my $sequence;
+	while (<CHR_IN>){
+	    chomp;
+	    $_ =~ s/\r//; # removing /r carriage returns
+
+	    if ($_ =~ /^>/){
+		### storing the previous chromosome in the %chromosomes hash, only relevant for Multi-Fasta-Files (MFA)
+		if (exists $chromosomes{$chromosome_name}){
+		    warn "chr $chromosome_name (",length $sequence ," bp)\n";
+		    die "Exiting because chromosome name already exists. Please make sure all chromosomes have a unique name!\n";
+		}
+		else {
+		    if (length($sequence) == 0){
+			warn "Chromosome $chromosome_name in the multi-fasta file $chromosome_filename did not contain any sequence information!\n";
+		    }
+		    warn "chr $chromosome_name (",length $sequence ," bp)\n";
+		    $chromosomes{$chromosome_name} = $sequence;
+		    $processed{$chromosome_name} = 0; # processed chromosomes will be set to 1 later to allow a record of which chromosome has been processed
+		}
+		### resetting the sequence variable
+		$sequence = '';
+		### setting new chromosome name
+		$chromosome_name = extract_chromosome_name($_);
+	    }
+	    else{
+		$sequence .= uc$_;
+	    }
+	}
+
+	if (exists $chromosomes{$chromosome_name}){
+	    warn "chr $chromosome_name (",length $sequence ," bp)\t";
+	    die "Exiting because chromosome name already exists. Please make sure all chromosomes have a unique name.\n";
+	}
+	else{
+	    if (length($sequence) == 0){
+		warn "Chromosome $chromosome_name in the file $chromosome_filename did not contain any sequence information!\n";
+	    }
+	    warn "chr $chromosome_name (",length $sequence ," bp)\n";
+	    $chromosomes{$chromosome_name} = $sequence;
+	    $processed{$chromosome_name} = 0; # processed chromosomes will be set to 1 later to allow a record of which chromosome has been processed
+	}
+    }
+    warn "\n";
+    chdir $parent_dir or die "Failed to move to directory $parent_dir\n";
+}
+
+sub extract_chromosome_name {
+    ## Bowtie extracts the first string after the inition > in the FASTA file, so we are doing this as well
+    my $fasta_header = shift;
+    if ($fasta_header =~ s/^>//){
+	my ($chromosome_name) = split (/\s+/,$fasta_header);
+	return $chromosome_name;
+    }
+    else{
+	die "The specified chromosome ($fasta_header) file doesn't seem to be in FASTA format as required!\n";
+    }
+}
+
+
+sub print_helpfile{
+
+  warn <<EOF
+
+  SYNOPSIS:
+
+  This script reads in methylation call files from the Bismark methylation extract that contain additional information about the reads that 
+  methylation calls belonged to. It processes entire (single-end) reads and then filters calls for NOMe-Seq positions (nucleosome occupancy
+  and methylome sequencing) where accessible DNA gets methylated in a GpC context:
+ 
+     (i) filters CpGs to only output cytosines in A-CG and T-CG context
+    (ii) filters GC context to only report cytosines in GC-A, GC-C and GC-T context
+
+  Both of these measures aim to reduce unwanted biases, i.e. the influence of G-CG (intended) and C-CG (off-target) on endogenous CpG
+  methylation, and the influence of CpG methylation on (the NOMe-Seq specific) GC context methylation.
+
+  The input file needs to have been generated with bismark_methylation_extractor with the option '--yacht' specified and be in the following format:
+  
+  <seq-ID>  <methylation state*>  <chromosome>  <start position (= end position)>  <methylation call>  <read start>  <read end>  <read orientation>
+
+  *   Methylated cytosines receive a '+' orientation,
+  * Unmethylated cytosines receive a '-' orientation.
+
+
+  USAGE: NOMe_filtering --genome_folder <path> [input]
+
+
+  The name of the output file is rerived from the input file, end will end in '.manOwar.txt.gz'
+
+  --genome_folder <path>   Enter the genome folder you wish to use to extract sequences from (full path only!). Accepted
+                           formats are FastA files ending with '.fa' or '.fasta'. Specifying a genome folder path is mandatory.
+
+
+  --help                   Displays this help message and exits
+
+
+
+OUTPUT FORMAT:
+
+The NOMe-Seq filtering output reports cytosines in CpG context only if they are in A-CG or T-CG context,
+and cytosines in GC context only when the C is not in CpG context. The output file is tab-delimited and in
+the following format (1-based coords):
+===========================================================================================================
+
+<readID>  <chromosome>  <read start>  <read end>  <count methylated CpG>  <count non-methylated CpG>  <count methylated GC>  <count non-methylated GC>
+HWI-D00436:298:C9KY4ANXX:1:1101:2035:2000_1:N:0:_ACAGTGGT 10 8517979 8518098 0 1 0 1 
+HWI-D00436:298:C9KY4ANXX:1:1101:5072:1993_1:N:0:_ACAGTGGT 8 9476630 9476748 0 0 0 2 
+
+
+                              Script last modified: 06 April 2017
+
+EOF
+    ;
+  exit 1;
+}
+
