@@ -17,7 +17,10 @@ args <- commandArgs(TRUE)
 vis_param <- args[1]
 Ideo_file <- args[2]
 outpath <- args[3]
-core_num <- args[4]
+core_num <- as.numeric( args[4] )
+
+#win_size <-as.numeric( args[5] )
+win_size <- 100000
 
 outpath <- gsub( "/$","",  outpath)
 
@@ -60,7 +63,7 @@ window_levels <- function( cyto.df, data.df, cx,sample_name){
     	chr_data <- data.df[data.df$chr == ch,]
 
 
-    	win <- seq( 1, cyto.df$end[i]+100000, by=100000)
+    	win <- seq( 1, cyto.df$end[i]+win_size, by=win_size)
     	start <- win[1:length(win)-1]
     	end <- win[2:length(win)]
     	end[length(end)] <- cyto.df$end[i]
@@ -71,8 +74,10 @@ window_levels <- function( cyto.df, data.df, cx,sample_name){
 			mean_levels[i] <- round( mean( chr_data$level[chr_data$pos-1 < end[i]& chr_data$pos-1 >= start[i] ]),3 )
 		}
 		chr <- as.factor( rep(ch, length(start)) )
-		windows_data <- data.frame(chr,start, end, mean_levels)
-		write.table( windows_data, file=out_CpGF, append=TRUE,row.names=FALSE, col.names = FALSE,sep="\t" )
+		start <- start-1
+		end <- end -1
+		windows_data <- format( data.frame(chr,start, end, mean_levels), scientific = FALSE)
+		write.table( windows_data, file=out_CpGF, append=TRUE,row.names=FALSE, col.names = FALSE,sep="\t", quote=FALSE)
 	}
 
 }
@@ -97,7 +102,7 @@ mean_levels <- foreach::foreach( i =1:nrow(data_param), .combine=c, .packages=c(
 	  wig_file_name <- paste(outpath, "/", name, "/CpG_methylLev.wig", sep='')
 	  file.create(wig_file_name)
   	  
-	  window_levels( Ideo.df, data, data_param$context[i] ,data_param$sample[i] )
+	  #window_levels( Ideo.df, data, data_param$context[i] ,data_param$sample[i] )
 	  data$level <- round(data$level, 3)
 	  for(chr_i in 1:length(Ideo.df$chr)){
 		  chr_data <- data[data$chr == Ideo.df$chr[chr_i],]

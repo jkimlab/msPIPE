@@ -42,14 +42,14 @@ class Programs():
         self.bsmooth = scriptD + '/BSmooth_DMR.R'
         self.bsmoothreform = scriptD + '/BSmooth_reform.py'
         self.bs22bismark = scriptD + '/bs22bismark.py'
+        self.window = scriptD + "/window_methylLev.py"
 
         self.gene = binD + '/GMA/Gene-Methyl-Analysis.pl'
         self.gprofiler = binD + '/GMA/gProfiler.R'
 
         visD = f"{pipe_path}/bin/vis_script/"
-        self.analCpG_vis_paral = visD + 'visualization_parallel.R'
-        self.window = visD + "win100kb_methylLevel.R"
-        self.circos = visD + 'GMA.Circos_100kb.R'
+        self.analCpG_vis_paral = visD + 'hist_parallel.R'
+        self.circos = visD + 'GMA.Circos.R'
         self.contextLev = visD + 'genomic_context_levels.R'
 
 
