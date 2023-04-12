@@ -404,8 +404,9 @@ def Bismark_mapping(callD, refD):
 		
 		bamF = f'{dataD}/{LIB.lib_name}_{args.program}.bam'
 		sorted_bamF = f'{dataD}/{LIB.lib_name}_{args.program}.sorted.bam'
-		sortCMD_list.append( [f'{prog.samtools} sort -o {sorted_bamF} -@ {core} {bamF}', f'{libD}/logs/log.sortbam.txt',log_proc ] )
-	
+		sortCMD_list.append( [f'{prog.samtools} sort -n -o {sorted_bamF} -@ {core} {bamF}', f'{libD}/logs/log.sortbam.txt',log_proc ] )
+
+
 		# 1)bismark
 		if args.program == 'bismark':
 			cmd_align = f'{prog.bismark} --score_min L,0,-0.6 -N 0 -L 20 --parallel {core} --temp_dir {tmpD} {refD} -o {dataD}'
@@ -503,7 +504,7 @@ def Bismark_calling(callD):
 
 		##3.calling:  Methylation extractor
 		if not args.skip_calling:
-			cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --no_overlap --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/ -o {methylD} {LIB.bam_file}'
+			cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --multicore {core} --no_overlap --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/ -o {methylD} {LIB.bam_file}'
 			callingCMD_list.append( [cmd, f'{libD}/logs/log.Bismark_call.txt',log_proc ] )
 		
 		##4.bedGraph
