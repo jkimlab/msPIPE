@@ -6,18 +6,20 @@ import subprocess as sub
 
 try :
 	winsize = int(sys.argv[1])
-	mspipe_outputpath = sys.argv[2]
-	outD = sys.argv[3]
+	IdeoF = sys.argv[2]
+	sample_name = sys.argv[3]
+	methylCallF = sys.argv[4]
+	outF = sys.argv[5]
 
 except IndexError:
-    print('     "window_methylLev.py [window size] [mspipe output dir] [output dir (/outdir/samplename/CpG_methylLev_window.bed) ]"')
+    print('     "window_methylLev.py [window size] [Ideogram.bed] [sample_name] [methyl call file] [output]"')
     sys.exit()
 
     
 
-Anal_D = os.path.join( mspipe_outputpath,"Analysis")
-IdeoF = os.path.join(Anal_D, "Ideogram.bed")
-vis_paramF = os.path.join(Anal_D, "vis_params.txt")
+#Anal_D = os.path.join( mspipe_outputpath,"Analysis")
+#IdeoF = os.path.join(Anal_D, "Ideogram.bed")
+#vis_paramF = os.path.join(Anal_D, "vis_params.txt")
 
 
 ## READ Ideogram
@@ -42,33 +44,13 @@ for l in open(IdeoF , 'r'):
 
 
 ## READ PARAMS
-sampleDict = {}
-for l in open(vis_paramF , 'r'):
-	col= l.rstrip().split('\t')
-	sample,context,file_path = col[:3]
 
-	if context != "CpG": continue
-
-	if not sample in sampleDict:
-		sampleDict[sample] = {}
-
-	sampleDict[sample] = file_path
-
-## READ CALLs
-
-for sample in sampleDict:
-	methylCallF = sampleDict[sample]
-
-	ch = ""
 	
-	name = sample + "_windowcall.txt"
-	sampleDir = os.path.join(outD, sample)
-	sub.call(f"mkdir -p {sampleDir}", shell=True)
-	outF = os.path.join(sampleDir, "CpG_methylLev_window.bed")
-
+if True:
 	O = open(outF, 'w')
 	win_i =0
 	window_lev_list= []
+	ch = ""
 	for l in open(methylCallF , "r"):
 		col = l.rstrip().split("\t")
 	

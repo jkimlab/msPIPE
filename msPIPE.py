@@ -365,6 +365,9 @@ def Reads_preprocessing(callD):
 			printlog(log_proc, '\n\t.. done\n')
 			for i in range(len(LIBs)):
 				LIB = LIBs[i]
+				libD = callD +'/'+ LIB.lib_name
+				dataD = libD + '/data'
+
 				if LIB.lib_type == 'P':
 					LIB.trimmed_file_1 = f'{dataD}/*_val_1.fq.gz'
 					LIB.trimmed_file_2 = f'{dataD}/*_val_2.fq.gz'
